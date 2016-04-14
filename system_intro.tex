@@ -1,0 +1,35 @@
+% !TEX root = ./main.tex
+\section{Overview of Multi-core Computer Systems}
+A multi-core computer system uses two or more cores. The system can have multiple chips or multiple cores on a single chip. There are two major types of multi-core systems: shared-memory systems and distributed memory systems. In this thesis, we will discuss the realizations of CU methods on both shared memory system and distributed memory systems. 
+
+\subsection{Shared Memory Systems}
+In shared memory systems, multiple processors are connected to a memory system via an interconnection network, and each processor can access each memory location. These processors usually communicate with each other implicitly through shared data structures. Depending on the type of interconnect, shared memory systems can be classified into two types: uniform memory access (UMA) system and nonuniform memory access (NUMA) system. UMA system connects all the processors directly to main memory. All processors in NUMA system have a direct connect to a block of main memory and they can access each others' blocks memory through hardware built into the processors. Figure~\ref{fig:shared_mem} shows the architectures for the two types of shared memory systems.\footnote{The figure is adapted from Figure 2.5 and Figure 2.6 in \cite{pacheco2011introduction}.} 
+\begin{figure}[!h]
+        \centering
+       \begin{subfigure}[b]{0.45\textwidth}
+                \includegraphics[width=\textwidth]{./figs/uma.eps}
+                \caption{UMA system.}\label{fig:consist}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.45\textwidth}
+                \includegraphics[width=\textwidth]{./figs/numa.eps}
+                \caption{NUMA system.}\label{fig:inconsist}
+        \end{subfigure}
+        \vspace{-3mm}
+        \caption{Architectures for UMA and NUMA systems.}
+        \vspace{-3mm}
+        \label{fig:shared_mem}
+\end{figure}
+
+
+\subsection{Distributed Memory Systems}
+Distributed memory system consists of a collection of commodity processors which are connected by a interconnection network. Each processor has its own private memory and communicates others by explicitly sending messages through an interconnection network. Figure~\ref{fig:dist_sys} demonstrates the architecture for distributed memory systems.  
+\begin{figure}[!h]
+      \centering
+        \includegraphics[width=0.5\textwidth]{./figs/distributed_sys.eps}
+      \caption{Architectures for distributed memory systems.}
+        \label{fig:dist_sys}
+\end{figure}
+
+

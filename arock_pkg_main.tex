@@ -1,0 +1,65 @@
+%
+\documentclass[smallextended,final]{svjour3}     % onecolumn (ditto)
+\usepackage[backref,colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue, pdfborder={0 0 0}]{hyperref}
+\usepackage[letterpaper,top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+
+\smartqed % make Springer's \qed better placed
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\input{macros}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage[ruled,vlined]{algorithm2e}
+
+
+%% title
+\title{ARock Architecture}
+
+%% author
+\author{}
+
+%\institute{Z. Peng \and M. Yan \and W. Yin\at
+%              Department of Mathematics, University of California, Los Angeles, CA 90095, USA\\
+%              \email{zhimin.peng / yanm / wotaoyin@math.ucla.edu}\\
+%           Y. Xu\at Department of Combinatorics and Optimization, University of Waterloo, Waterloo, ON N2L3G1, Canada\\ \email{yangyang.xu@uwaterloo.ca}}
+\date{\today}
+\journalname{Report}  % Springer stuff
+              
+
+%% start the document
+\begin{document}
+
+\maketitle
+
+%% abstract
+\abstract{
+This the abstract for the ARock package conference paper.
+}
+
+\tableofcontents
+
+\input{intro}
+
+\input{syntax}
+
+\input{architecture}
+
+\input{numerical_summary}
+
+
+\input{huber_loss}
+
+\input{l12_log}
+
+
+
+
+
+
+\bibliographystyle{siam}
+\bibliography{asyn}
+
+
+\end{document}
