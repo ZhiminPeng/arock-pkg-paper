@@ -1,5 +1,5 @@
 % !TEX root = ./arock_pkg_main.tex
-\section{Architecture}
+\subsection{Design}
 The goal of the ARock package is to build an abstract framework to simplify the implementation of async-parallel algorithms. ARock reduces each application to the fixed-point problem \eqref{eqn:fix_point_set} with the fixed-point operator $\cT$ being CF. The operator $\cT$ can be a single stand along operator or formed by combination of multiple CF operators under certain operator splitting scheme. Then the ARock kernel takes the operator $\cT$ and runs the Algorithm \ref{alg:asyn_core} with a given number of workers.  Figure \ref{fig:arch}. gives an overview of the multilevel architecture of the ARock package. In the following sections, we will explain each of the levels in more details. 
 \begin{figure}[!h]
       \centering
@@ -9,10 +9,10 @@ The goal of the ARock package is to build an abstract framework to simplify the 
 \end{figure}
 
 
-\subsection{Library}
+\subsubsection{Library}
 The library layer includes three major components: linear algebra functions, wrappers and data structures, data file parsers, and helper functions. The major data structures are dense vector, dense matrix and sparse matrix. We implemented a few (Basic Linear Algebra Subprograms) BLAS level 1 and level 2 wrappers. File I/O functions for matrices in the matrix market format\footnote{http://math.nist.gov/MatrixMarket/formats.html} and LIBSVM format\footnote{https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/} are also implemented. Helper functions include a list of objective function calculators, command argument parsers and error handling functions. 
 
-\subsection{Operator}
+\subsubsection{Operator}
 The operator layer contains a library of projection operators, proximal operators and forward operators which implemented the operations required for a high-level iterative algorithm. These operators are implemented in the form of function object (functor). The following is a template for the operator functor. In general, each operator struct has three overloaded parenthesis operator: one takes a scalar; one takes a scalar and an index then applies the coordinate update; one takes an input vector and a output vector, then perform full update to the input vector and saves the results in the output vector. Default constructor and customized constructors are also provided. If an operator involves data, the point to the data should be added as a member variable. 
 
 \begin{lstlisting}[language=c++]
@@ -128,7 +128,7 @@ Currently, we implemented 17 operators, which are summarized in Table \ref{tab:p
 \end{table}
 
 \newpage
-\subsection{Splitting Schemes}
+\subsubsection{Splitting Schemes}
 Based on the discussions in Section \ref{sec:splitting}, we implemented several splitting schemes, including FBS, BFS and PRS. The structure of the splitting scheme has the following form. It usually has one or more than one operators as the template arguments. It has an overloaded parenthesis operator which performs updates to the unknown variable $x$ and maintained variables. 
  \begin{lstlisting}[language=c++]
  template <typename Op1, typename Op2, ...>
@@ -146,9 +146,9 @@ Based on the discussions in Section \ref{sec:splitting}, we implemented several 
 \end{lstlisting}
 
 
-\subsection{Worker, Controller and the ARock Interface}
+\subsubsection{Worker, Controller and the ARock Interface}
 In general, ARock consists of several workers and a controller. Each worker has access to the shared data, the maintained variables, the unknown parameter $x$, and other algorithm related constants. Each worker continuously updates some coordinates of $x$ until the stopping criterions are satisfied. At the same time, workers share delay monitoring information and convergence progress information with the controller, who use the information to dynamically update the step sizes to facilitate the convergence of ARock. The ARock interface simply spawns a set of threads with one thread taking the controller role and the rest of threads being the workers. 
 
-\subsection{Applications}
+\subsubsection{Applications}
 We implemented several applications from statistical machine learning and scientific computing with the ARock framework. The applications can be compiled into executable files, which can then be executed through the command line interface. For an unimplemented application, if the necessary operators and splitting schemes are defined in the ARock library, then creating an async-parallel algorithm can be as simple as calling ARock on the splitting scheme.
 
