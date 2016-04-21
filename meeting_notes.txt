@@ -1,0 +1,42 @@
+1. Introduction
+
+We can reduce the barrier to entry on doing async-parallel computing. The users of the pkg
+only need to know a few concepts of classic optimization formulations and algorithms.
+Meaning that the users only needs to know how to implement the CU for their application.
+
+We provide a set of common examples.
+
+The package provide serial functionality and does parallel programming automatically.
+
+A library of operators have been implemented.
+
+(Check the paper from Boyd A primer on monotone operator theory for the transition sentence)
+
+Related works go here.
+
+2. Quick-Start Section
+   1) installation;
+   2) command line;
+   3) the app file;
+   TODO: need to figure out a way to transite to the next section.
+
+
+3. Syntax
+      Brief explanation of components
+      forward operator -> gradenite step
+      backward operator -> prox
+      fbs -> particular composition of two operators -> prox gradient
+      why call it fbs instead of prox gradient -> fixed point framework
+      other generic composition rules exist -> read following resources
+      
+
+4. Numerical Results
+
+We should add LP, SOCP when we get time. 
+
+
+
+5. Architecture
+   1. pointing to documentation;
+   2. 
+   
