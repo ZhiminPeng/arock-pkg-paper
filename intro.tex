@@ -1,9 +1,13 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Introduction}
-The fixed-point problem is
-\begin{equation}\label{eqn:fix_point_set}
-\cT x = x
-\end{equation}
+\textbf{[Motivation for fixed-point problem]} Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
+These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. Though CU methods have different settings and convergence properties,  the monotone operator theory can unify them into a single abstract framework. Specifically, CU method can be reduced to the coordinate update of a fixed-point iteration. 
+
+\textbf{[Motivation for CU package]} Existing CU solvers \cite{,,,,} either focus on very particular problems or do not scale to large-sized problems due to their sequential implementation. Adapting them to solve slightly different large-sized problems requires significant human effort. 
+
+\textbf{[Contribution of our work]} In this paper, we present ARock, a C++ library to simplify the implementation of both sequential and parallel coordinate update algorithms. The library reduces the barrier to entry on doing async-parallel computing. Users of ARock can use the prebuilt solvers or build their own async-parallel solvers by knowing a few concepts of classic optimization formulations and algorithms.
+
+ARock supports a wide range of prebuilt applications, including, but not limited to, linear equations, $\ell_1$ and $\ell_2$ regularized logistic regression, portfolio optimization, $\ell_1$ and $\ell_2$ regularized least squares, robust regression, quadratic programming, and nonnegative matrix factorization. The solvers of these applications can be interacted through easy-to-use command-line tools. Other features of ARock includes a rich set of operators, comprehensive documentation, and easy-to-use library calls.
 
 Major details are
 \begin{itemize}
@@ -14,4 +18,3 @@ Major details are
 \item It is simple enough that an undergraduate can implement it. 
 \item Matlab interface is forth coming;
 \end{itemize}
-
