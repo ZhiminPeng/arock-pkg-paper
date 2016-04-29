@@ -1,58 +1,75 @@
 %
-\documentclass[smallextended,final]{svjour3}     % onecolumn (ditto)
-\usepackage[backref,colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue, pdfborder={0 0 0}]{hyperref}
-\usepackage[letterpaper,top=2in, bottom=1.5in, left=1in, right=1in]{geometry}
+\documentclass[twoside,11pt]{article}
 
-\smartqed % make Springer's \qed better placed
-\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+% Any additional packages needed should be included after jmlr2e.
+% Note that jmlr2e.sty includes epsfig, amssymb, natbib and graphicx,
+% and defines many common macros, such as 'proof' and 'example'.
+%
+% It also sets the bibliographystyle to plainnat; for more information on
+% natbib citation styles, see the natbib documentation, a copy of which
+% is archived at http://www.jmlr.org/format/natbib.pdf
 
+\usepackage{jmlr2e}
+\usepackage{amsmath}
+
+% Definitions of handy macros can go here
 \input{macros}
-\usepackage{graphicx}
-\usepackage{subcaption}
-\usepackage{caption}
-\usepackage{booktabs}
-\usepackage[ruled,vlined]{algorithm2e}
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
 
+% Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
 
-%% title
-\title{ARock Architecture}
+\jmlrheading{1}{2016}{xx-xx}{x/xx}{xx/xx}{Brent Edmunds, Zhimin Peng and Wotao Yin}
 
-%% author
-\author{}
+% Short headings should be running head and authors last names
 
-%\institute{Z. Peng \and M. Yan \and W. Yin\at
-%              Department of Mathematics, University of California, Los Angeles, CA 90095, USA\\
-%              \email{zhimin.peng / yanm / wotaoyin@math.ucla.edu}\\
-%           Y. Xu\at Department of Combinatorics and Optimization, University of Waterloo, Waterloo, ON N2L3G1, Canada\\ \email{yangyang.xu@uwaterloo.ca}}
-\date{\today}
-\journalname{Report}  % Springer stuff
-              
+\ShortHeadings{ARock}{Brent Edmunds, Zhimin Peng and Wotao Yin}
+\firstpageno{1}
 
-%% start the document
 \begin{document}
+
+\title{ARock: An Asynchronous Parallel C++ Framework for Fixed Point Problems}
+
+\author{\name Brent Edmunds \email  brent.edmunds@math.ucla.edu
+       \AND
+       \name Zhimin Peng \email zhimin.peng@math.ucla.edu
+       \AND
+	\name Wotao Yin \email wotaoyin@math.ucla.edu\\
+       \addr Department of Mathematics\\
+       University of California, Los Angeles\\
+       Los Angeles, CA 90095, USA}	
+\editor{xxx}
 
 \maketitle
 
 %% abstract
-\abstract{
-This the abstract for the ARock package conference paper.
-}
+\begin{abstract}
+ARock is an abstract framework for implementing asynchronous parallel algorithms on shared memory platforms. 
+The programming model adopts the thread library from C++ at its lowest level. At the highest level, the goal is to enable fast prototyping of asynchronous parallel algorithms. 
+We developed a multilevel approach to reduce the gap between expert to low-level programming and novice-level programming. 
+A spectrum of applications have been implemented under this framework. 
+Experiments demonstrate that ARock is very efficient on both dense and sparse datasets. 
+\end{abstract}
 
-\tableofcontents
+\begin{keywords}
+  Asynchronous Parallel, Operator Splitting, Optimization
+\end{keywords}
+
 
 \input{intro}
 
 \input{quick_start}
 
-\input{fpp}
+\input{syntax}
 
-\input{related_work}
+%\input{fpp}
 
-\input{organization}
+%\input{related_work}
 
-\input{software}
+%\input{organization}
 
-\input{user_interaction}
+
+% \input{user_interaction}
 
 \input{numerical_summary}
 \input{huber_loss}
@@ -60,11 +77,12 @@ This the abstract for the ARock package conference paper.
 \input{portfolio}
 \input{nmf}
 
+\input{software}
+
 \input{conclusion}
 
 
 \bibliographystyle{siam}
 \bibliography{asyn}
-
 
 \end{document}
