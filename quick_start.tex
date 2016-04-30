@@ -1,7 +1,38 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Quick Start}
-\begin{itemize}
-\item installation;
-\item command line;
-\item the app file;
-\end{itemize}
+The ARock package is available at \url{https://github.com/ZhiminPeng/arock-new} \commzp{I will move the repo to uclaopt}. To illustrate the practical usage of it, we use the following $\ell_1$ regularized logistic regression
+\begin{equation}\label{eq:l1_log}
+\min_{x \in \RR^n} \lambda \|x\|_1 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right),
+\end{equation}
+where $\{(a_i, b_i)\}_{i = 1}^m$ is the training dataset. The following is the command to train the model on the news20 dataset with 2 threads. 
+\begin{lstlisting}[language=bash]
+$ arock_fbs_l1_log -data news20.svm -epoch 10 -nthread 2 -lambda 1.
+\end{lstlisting}
+Users can expect to get the following output:
+\begin{lstlisting}[language={}]
+Objective value is: 8103
+Computing time  is: 4.88(s)
+# of nonzero in x: 4568
+\end{lstlisting}
+We can see that for a problem with more than 1 million features, the training time is less than 5 seconds. Problem \eqref{eq:l1_log} is solved with the following forward-backward splitting scheme
+\begin{equation}\label{eq:fbs_l1_log}
+x^{k+1} = \prox_{\lambda \eta \|x\|_1} \left(x^k - \eta ~\nabla \text{log\_loss}(x^k)\right).
+\end{equation}
+The following snippet of code is the implementation of \eqref{eq:fbs_l1_log} with the ARock framework. 
+\begin{lstlisting}[language=C++]
+  // [...] data loading and parameter definitions are skipped
+  // define the forward operator
+  forward_grad_for_log_loss<SpMat> forward(&A, &b, &Atx, operator_step_size);
+  using Forward = decltype(forward);
+  // define the backward operator
+  prox_l1 backward(operator_step_size, lambda);
+  using Backward = decltype(backward);
+  // define the operator splitting scheme
+  ForwardBackwardSplitting<Forward,Backward> fbs(&x, forward, backward);  
+  using Splitting_Scheme = decltype(fbs);
+  // define the default controller
+  Controller<Splitting_Scheme> controller(params);
+  // call AROCK
+  AROCK(fbs, controller, params);  
+\end{lstlisting}
+We can see that creating an async-parallel solver can be achieved by simply assembling appropriate operators together. 
