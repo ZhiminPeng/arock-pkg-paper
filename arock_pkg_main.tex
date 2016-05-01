@@ -28,13 +28,13 @@
 
 \begin{document}
 
-\title{ARock: An Asynchronous Parallel C++ Framework for Fixed Point Problems}
+\title{ARock: A C++ Framework for Async-Capable Parallel First-Order Algorithms}
 
-\author{\name Brent Edmunds \email  brent.edmunds@math.ucla.edu
+\author{\name Brent Edmunds \email brent.edmunds@math.ucla.edu
        \AND
        \name Zhimin Peng \email zhimin.peng@math.ucla.edu
        \AND
-	\name Wotao Yin \email wotaoyin@math.ucla.edu\\
+	\name Wotao Yin \email wotaoyin@math.ucla.edu \\
        \addr Department of Mathematics\\
        University of California, Los Angeles\\
        Los Angeles, CA 90095, USA}	
@@ -44,8 +44,8 @@
 
 %% abstract
 \begin{abstract}
-ARock is an abstract framework for implementing sequential, sync-parallel, and asynchronous parallel algorithms on shared memory platforms. 
-The programming model adopts the thread library from C++ at its lowest level. At the highest level, the goal is to enable fast prototyping of asynchronous parallel algorithms. 
+ARock is an abstract framework for implementing sequential, sync-parallel, and asynchronous parallel coordinate update algorithms on shared memory platforms. 
+The programming model adopts the thread library from C++ at its lowest level. At the highest level, the goal is to enable fast prototyping of parallel algorithms. 
 We developed a multilevel approach to reduce the gap between expert to low-level programming and novice-level programming. 
 A spectrum of applications have been implemented under this framework. 
 Experiments demonstrate that ARock is very efficient on both dense and sparse datasets. 
@@ -72,17 +72,13 @@ Experiments demonstrate that ARock is very efficient on both dense and sparse da
 % \input{user_interaction}
 
 \input{numerical_summary}
-\input{huber_loss}
-\input{l12_log}
-\input{portfolio}
-\input{nmf}
+% \input{huber_loss}
+
 
 \input{software}
 
 \input{conclusion}
 
-
-\bibliographystyle{siam}
 \bibliography{asyn}
 
 \end{document}

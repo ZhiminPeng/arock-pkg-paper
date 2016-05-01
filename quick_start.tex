@@ -16,23 +16,16 @@ Computing time  is: 4.88(s)
 \end{lstlisting}
 We can see that for a problem with more than 1 million features, the training time is less than 5 seconds. Problem \eqref{eq:l1_log} is solved with the following forward-backward splitting scheme
 \begin{equation}\label{eq:fbs_l1_log}
-x^{k+1} = \prox_{\lambda \eta \|x\|_1} \left(x^k - \eta ~\nabla \text{log\_loss}(x^k)\right).
+x^{k+1} = \prox_{\lambda \eta \|x\|_1} \left(x^k - \eta \, \nabla \,\text{logistic\_loss}(x^k)\right).
 \end{equation}
 The following snippet of code is the implementation of \eqref{eq:fbs_l1_log} with the ARock framework. 
 \begin{lstlisting}[language=C++]
   // [...] data loading and parameter definitions are skipped
-  // define the forward operator
   forward_grad_for_log_loss<SpMat> forward(&A, &b, &Atx, operator_step_size);
   using Forward = decltype(forward);
-  // define the backward operator
   prox_l1 backward(operator_step_size, lambda);
   using Backward = decltype(backward);
-  // define the operator splitting scheme
   ForwardBackwardSplitting<Forward,Backward> fbs(&x, forward, backward);  
-  using Splitting_Scheme = decltype(fbs);
-  // define the default controller
-  Controller<Splitting_Scheme> controller(params);
-  // call AROCK
-  AROCK(fbs, controller, params);  
+  AROCK(fbs, params);  
 \end{lstlisting}
 We can see that creating an async-parallel solver can be achieved by simply assembling appropriate operators together. 
