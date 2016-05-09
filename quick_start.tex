@@ -1,31 +1,29 @@
 % !TEX root = ./arock_pkg_main.tex
-\section{Quick Start}
-The ARock package is available at \url{https://github.com/ZhiminPeng/arock-new} \commzp{I will move the repo to uclaopt}. To illustrate the practical usage of it, we use the following $\ell_1$ regularized logistic regression
+\section{Quick Start}\label{sec:quick_start}
+ To illustrate the practical usage of ARock, we use the $\ell_1$ regularized logistic regression
 \begin{equation}\label{eq:l1_log}
-\min_{x \in \RR^n} \lambda \|x\|_1 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right),
+\min_{x \in \RR^n} \lambda \|x\|_1 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right)
 \end{equation}
-where $\{(a_i, b_i)\}_{i = 1}^m$ is the training dataset. The following is the command to train the model on the news20 dataset with 2 threads. 
+as an example, where $\{(a_i, b_i)\}_{i = 1}^m$ is the training dataset. We set the regularization parameter $\lambda$ to 1, and set the maximum number of epochs to 10. The following is the command to train the model on the news20\footnote{ This dataset is from \url{http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets}.} dataset with 2 threads,
 \begin{lstlisting}[language=bash]
 $ arock_fbs_l1_log -data news20.svm -epoch 10 -nthread 2 -lambda 1.
+[other outputs skipped]
+Computing time  is: 4.88(s).
 \end{lstlisting}
-Users can expect to get the following output:
-\begin{lstlisting}[language={}]
-Objective value is: 8103
-Computing time  is: 4.88(s)
-# of nonzero in x: 4568
-\end{lstlisting}
-We can see that for a problem with more than 1 million features, the training time is less than 5 seconds. Problem \eqref{eq:l1_log} is solved with the following forward-backward splitting scheme
+where \texttt{-data, -epoch, -nthread, -lambda} are the flags for the data file, maximum number of epochs, total number of threads, and regularization parameter $\lambda$ respectively. We can see that the command-line tool is easy-to-use. Beyond the simplicity, ARock is also efficient in the sense that the training time is less than 5 seconds for a problem with more than 1 million variables. Next, we show the major components of the source codes for building \texttt{arock\_fbs\_l1\_log}.
+
+We solve \eqref{eq:l1_log} with the forward-backward splitting scheme
 \begin{equation}\label{eq:fbs_l1_log}
-x^{k+1} = \prox_{\lambda \eta \|x\|_1} \left(x^k - \eta \, \nabla \,\text{logistic\_loss}(x^k)\right).
-\end{equation}
-The following snippet of code is the implementation of \eqref{eq:fbs_l1_log} with the ARock framework. 
+x^{k+1} = \underbrace{\prox_{\lambda \eta \|x\|_1}}_{\text{backward operator}} (\underbrace{x^k - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x^k)}_{\text{forward operator}}),
+\end{equation}  
+where the gradient step of logistic loss and the proximal operator of $\ell_1$ norm correspond to the forward step and backward step respectively. The following snippet of code (extracted from \texttt{apps/arock\_fbs\_l1\_log.cc}) implements \eqref{eq:fbs_l1_log} with the ARock framework. Specifically, line 2 and line 5 define the forward operator and backward operator respectively. Line 3 and line 6 use \texttt{decltype} to simplify the names for the operator types. Line 7 define the FBS with the previously defined forward and backward operators. Line 8 calls \texttt{AROCK} on the \texttt{fbs}  object. We can see that creating an async-parallel solver can be easily achieved through assembling appropriate operators together.  
 \begin{lstlisting}[language=C++]
-  // [...] data loading and parameter definitions are skipped
-  forward_grad_for_log_loss<SpMat> forward(&A, &b, &Atx, operator_step_size);
-  using Forward = decltype(forward);
-  prox_l1 backward(operator_step_size, lambda);
-  using Backward = decltype(backward);
-  ForwardBackwardSplitting<Forward,Backward> fbs(&x, forward, backward);  
+  // forward operator: gradient step for logistic loss
+  forward_grad_for_log_loss<SpMat> forward(&A, &b, &Atx, eta);
+  using F = decltype(forward); // yields the type of forward
+  // backward operator: proximal operator for l1 norm 
+  prox_l1 backward(eta, lambda);
+  using B = decltype(backward); // yields the type of backward
+  ForwardBackwardSplitting<F, B> fbs(&x, forward, backward);  
   AROCK(fbs, params);  
 \end{lstlisting}
-We can see that creating an async-parallel solver can be achieved by simply assembling appropriate operators together. 
