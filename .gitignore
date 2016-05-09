@@ -2,6 +2,8 @@ amsa_main.pdf
 
 *.ddf
 
+
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -19,6 +21,8 @@ amsa_main.pdf
 # *.ps
 # *.eps
 *.pdf
+
+!figs/*.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
