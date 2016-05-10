@@ -42,4 +42,4 @@ easily achieved through assembling appropriate operators together.
   // the driver
   AROCK(fbs, params);  
 \end{lstlisting}
-One can easily adapt the previous code to solve other problems, for example, replacing \texttt{forward\_grad\_for\_log\_loss<SpMat>} by \texttt{forward\_grad\_for\_square\_loss<Matrix>} solves the Lasso problem; replacing \texttt{prox\_l1} by \texttt{prox\_sum\_square} solves the $\ell_2$ norm regularized logistic regression problem. For detailed implementation of the operators and splitting schemes, the readers can refer to Section ??.
+One can easily adapt the previous code to solve other problems, for example, replacing \texttt{forward\_grad\_for\_log\_loss<SpMat>} by \texttt{forward\_grad\_for\_square\_loss<Matrix>} solves the Lasso problem ($\min \lambda \|x\|_1 + \frac{1}{2} \|A x - b\|^2$); replacing \texttt{prox\_l1} by \texttt{prox\_sum\_square} solves the $\ell_2$ norm regularized logistic regression problem. For detailed implementation of the operators and splitting schemes, the readers can refer to Section ??.
