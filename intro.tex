@@ -1,10 +1,48 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Introduction}
-(list a list of problems we can solve) \pkg supports a wide range of prebuilt applications, including, but not limited to, 
+(a list of problems we can solve)
+\pkg~is a toolbox for optimization that implements algorithms based on a set of modern methods for large-scale optimization. It is designed for fast prototyping of scalable algorithms. The optimization problem can be both smooth and nonsmooth, convex and nonconvex, as well as constrained and unconstrained.  The algorithms solving these problems can be both single-threaded and multi-threaded, and the multi-threaded parallelism can be both synchronous (the standard kind) and asynchronous.  
+
+Specifically, it implements  algorithms based on one or more of the following methods:
+\begin{itemize}
+\item \textbf{Operator splitting}: Forward-Backward (such as ISTA and FISTA), Backward-Forward, Douglas-Rachford  (which is equivalent to ADMM), Peaceman-Rachford, Primal-Dual, Three-Operator, as well as their combinations and some extensions;
+\item \textbf{Coordinate (descent) update} under a set of indexing rules;
+\item \textbf{Parallelization} of numerical linear algebra or of coordinate updates;
+\item  \textbf{Randomization} is an option for coordinate updates.
+\end{itemize}
+These methods are reviewed in \S?? below.
+
+Although \pkg~does not reduce a problem automatically into these algorithms, we address modeling by  providing many examples. Specifically, the initial version of the toolbox includes the following applications:
+\begin{itemize}
+\item Linear system of equations;
+\item Quadratic programming;
+\item $\ell_1$ and $\ell_2$ regularized  regression / empirical risk minimization;
+\item Support vector machine;
+\item Portfolio optimization;
+\item Nonnegative matrix factorization.
+\end{itemize}
+What is common in these different problem is that they can all be reduced to very simple operations, either through operator splitting or coordinate update, or both, and, furthermore, the operations are either themselves easy to parallel or can be performed in parallel. Therefore, their numerical solutions can utilize all the cores available.
+
+\subsection{Coding highlights}
+\pkg~leverages the recent advances in parallel coding and strikes for both efficiency and code readability. The package is written under the C++11 standard, which implements multi-core parallelism without any external package. Our package can be compiled by  recent versions of standard C++ compilers  under Linux, Mac, and Windows. Compared to the traditional C and C++ codes, our codes  are also shorter, cleaner, and easier to read and modify. 
+
+For the best performance, BLAS is called for low-level numerical algebra operations.
+
+The user of 
+
+The novelty of ARock is the introduction of a multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
+The library reduces the barrier to entry on doing async-parallel computing. 
+Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
+ 
+
+
+% \pkg supports a wide range of prebuilt applications, including, but not limited to, 
 linear equations, $\ell_1$ and $\ell_2$ regularized logistic regression, portfolio optimization, 
 Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization.
 
-(add the link to the documentation)
+\pkg~is hosted and maintained on GitHub at \url{http://}. \commwy{I suggest a uclaopt address.}
+
+
 
 Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
 These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. 
