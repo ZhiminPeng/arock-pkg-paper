@@ -1,20 +1,33 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Introduction}
+(list a list of problems we can solve) \pkg supports a wide range of prebuilt applications, including, but not limited to, 
+linear equations, $\ell_1$ and $\ell_2$ regularized logistic regression, portfolio optimization, 
+Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization.
+
+(add the link to the documentation)
+
 Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
 These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. 
 Though CU methods have different settings and convergence properties,  the monotone operator theory can unify them into a single abstract framework. 
 Specifically, CU method can be reduced to the coordinate update of a fixed-point iteration. 
 
+
 Existing CU solvers \citep{hsieh2015passcode,jaggi2014communication,recht2011hogwild} either focus on very particular problems or do not scale to large-sized problems due to their sequential implementation. 
 Adapting them to solve slightly different large-sized problems requires significant human effort. 
-It is of interest to investigate a method for leveraging their common aspects CU methods applied to different problems, and simplify the implementation process for any new applications. 
+It is of interest to investigate a method for leveraging their common aspects CU methods applied to different problems, and simplify the implementation process for any new applications. (highlight we cover a broader range of problems).
+
+(We provide an architecture amendable for prototyping new solvers.)
+
+(We implemented in C++ with the new C++11 standard for its agonostic to different plateforms. Mention that the naming and readability are nice, interface with BLAS therefore, we have the best performance of linear algebra functions) 
 
 In this paper, we present ARock, a C++ library to simplify the implementation of both sequential and parallel coordinate update algorithms. It is a realization of the CF framework~\citep{peng2016coordinate} and the async-parallel framework~\citep{peng2015arock}. Parallelism of ARock is empowered by the thread library from the \texttt{C++11} standard. The novelty of ARock is the introduction of a multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
 The library reduces the barrier to entry on doing async-parallel computing. 
 Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
 
-ARock supports a wide range of prebuilt applications, including, but not limited to, 
-linear equations, $\ell_1$ and $\ell_2$ regularized logistic regression, portfolio optimization, 
-Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization. 
+ 
 The solvers of these applications can be interacted through easy-to-use command-line tools. 
 Other features of ARock include a rich set of operators, comprehensive documentation, and easy-to-use library calls.
+
+
+
+(outline of the paper)

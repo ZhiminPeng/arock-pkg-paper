@@ -16,7 +16,7 @@
 \input{macros}
 \newcommand{\dataset}{{\cal D}}
 \newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
-
+\newcommand{\pkg}{MOTAC}
 % Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
 
 \jmlrheading{1}{2016}{xx-xx}{x/xx}{xx/xx}{Brent Edmunds, Zhimin Peng and Wotao Yin}
@@ -28,7 +28,8 @@
 
 \begin{document}
 
-\title{To be determined}
+
+\title{\pkg: A Multicore Optimization Toolbox implementing Asynchronous, Coordinate, Randomized, and Splitting Methods}
 
 \author{\name Brent Edmunds \email brent.edmunds@math.ucla.edu
        \AND
@@ -44,11 +45,14 @@
 
 %% abstract
 \begin{abstract}
-XXX is an open source project for implementing sequential, sync-parallel, and asynchronous parallel first order algorithms on shared memory platforms. 
-The programming model adopts the thread library from C++ at its lowest level. At the highest level, the goal is to enable fast prototyping of parallel algorithms. 
-We developed a multilevel approach to reduce the gap between expert to low-level programming and novice-level programming. 
-A spectrum of applications have been implemented under this framework. 
-Experiments demonstrate that ARock is very efficient on both dense and sparse datasets. 
+toolbox, implements a theoritcal framework solves a  Wide variety of problems.
+	List problems
+
+Our toolbox is multicore, it scales to the computing resources available.
+
+We leverage modern randomized coordinate methods to achieve something.
+
+architecture is extensible and modular, the use can interact in variety ranging stuff to stuff.
 \end{abstract}
 
 \begin{keywords}
@@ -58,9 +62,11 @@ Asynchronous Parallel, Operator Splitting, Optimization, Coordinate Update
 
 \input{intro}
 
-\input{quick_start}
+\input{case_study}
 
-\input{syntax}
+\input{architecture}
+
+% \input{syntax}
 
 %\input{fpp}
 
@@ -74,7 +80,7 @@ Asynchronous Parallel, Operator Splitting, Optimization, Coordinate Update
 \input{numerical_summary}
 % \input{huber_loss}
 
-\input{architecture}
+% \input{architecture}
 
 % \input{software}
 
