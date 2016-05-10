@@ -26,9 +26,10 @@ What is common in these different problem is that they can all be reduced to ver
 \subsection{Coding highlights}
 \pkg~leverages the recent advances in parallel coding and strikes for both efficiency and code readability. The package is written under the C++11 standard, which implements multi-core parallelism without any external package. Our package can be compiled by  recent versions of standard C++ compilers  under Linux, Mac, and Windows. Compared to the traditional C and C++ codes, our codes  are also shorter, cleaner, and easier to read and modify. 
 
-For the best performance, BLAS is called for low-level numerical algebra operations.
+For the best performance, BLAS is called for low-level numerical algebra operations. It is possible to link with a parallel BLAS package such as ... 
 
-The user of 
+We design the package so that the user can implement an operator-splitting algorithm, an (asynchronous) parallel algorithm, or a coordinate update algorithm  with little technical background. The use only needs to specify an operator, either from the existing 
+
 
 The novelty of ARock is the introduction of a multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
 The library reduces the barrier to entry on doing async-parallel computing. 
