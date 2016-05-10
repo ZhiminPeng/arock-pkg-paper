@@ -1,8 +1,8 @@
 amsa_main.pdf
 
 *.ddf
-
-
+*.bb
+*.synctex(busy)
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
