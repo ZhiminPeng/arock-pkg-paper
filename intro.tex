@@ -43,13 +43,21 @@ The above functionalities are supported by a  novel modular architecture, which 
 The \pkg~package is maintained on GitHub at \url{http://}, which provides instructions to install on Linux, Mac, and Windows operating systems.  \commwy{Zhimin: I suggest a uclaopt address. Okay with you?}
 
 \subsection{Literature}
-\subsection*{Operator splitting methods:}  solve complicated optimization and monotone inclusion problems. They started to appear in 1950s for solving  solving partial differential equations and feasibility problems and were rapidly developed during the 1960s-1980s. Several splitting methods such as Forward-Backward, Douglas-Rachford  (which is equivalent to ADMM \cite{?,?}), and Peaceman-Rachford were introduced. Recently,  Recently,
+\subsection*{Operator splitting methods:}  These solve complicated optimization and monotone inclusion problems. They started to appear in 1950s for solving  solving partial differential equations and feasibility problems and were rapidly developed during the 1960s-1980s. Several splitting methods such as Forward-Backward, Douglas-Rachford  (which is equivalent to ADMM \cite{?,?}), and Peaceman-Rachford were introduced. Recently,  Recently,
 operator splitting methods such as ADMM and Split Bregman have found new applications in image processing,
 statistical and machine learning, compressive sensing, and control. New methods such as primal-dual splitting, three-operator splitting, and ... have appeared to solve more complicated problems.
 
 General software packages that .... include TFOCS .....
 
 \subsection*{Coordinate update methods:}
+These methods update the selected one, or a few, coordinates of the variable at each iteration.  While the original  coordinate update method developed in 1950s only minimizes the original objective function with respect to the selected coordinate, the later developments have allowed to minimize an alternative objective function that is often easier to minimize. Lately, coordinate descent has been extended to coordinate update in the sense that each update no longer corresponds to minimizing an objective function; the update can be the coordinate projection of an operator or a coordinate-wise solution to a fixed-point problem.
+
+The coordinate selection rule also has been evolving. Initially, the  cyclic selection was widely used. Then, other rules have appeared: shuffled cyclic, greedy, parallel, and randomized. (one or two more sentences.)
+
+Coordinate descent for function minimization has been implemented in the following software packages: 
+
+\subsection*{Asynchronous parallel methods:} 
+
 
 \subsection{Old}
 Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
