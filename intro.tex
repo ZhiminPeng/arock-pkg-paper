@@ -1,11 +1,71 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Introduction}
-(list a list of problems we can solve) \pkg supports a wide range of prebuilt applications, including, but not limited to, 
-linear equations, $\ell_1$ and $\ell_2$ regularized logistic regression, portfolio optimization, 
-Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization.
+(a list of problems we can solve)
+\pkg~is a toolbox for optimization that implements algorithms based on a set of modern methods for large-scale optimization. The toolbox covers a variety of optimization problems, which can  be both smooth and nonsmooth, convex and nonconvex, as well as constrained and unconstrained.  \pkg~is designed for fast prototyping of scalable algorithms, which can be  single-threaded or multi-threaded, and the multi-threaded code can run both synchronously (the standard kind) and asynchronously. 
 
-(add the link to the documentation)
+Specifically, \pkg~implements  algorithms based on  the following methods:
+\begin{itemize}
+\item \textbf{Operator splitting}: a collection of methods that decompose problems in simple subproblems. The original problem often takes the following forms: (i) minimizing $f_1(x)+\cdots+f_n(x)$, (ii) $0\in T_1(x)+\cdots +T_n(x)$, and (iii) minimizing $f_1(x_1)+\cdots+f_n(x_n)$ subject to linear constraints $A_1 x_1+\cdots A_m x_m=b$. In addition, any function $f_i$ can compose with a linear operator, e.g. $f(x) = g(Ax)$.
 
+\item \textbf{Coordinate (descent) update}: a collection of methods that find a solution $x$ by updating one, or a few, of its elements each time.
+\item \textbf{Parallelization} of numerical linear algebra or coordinate updates;
+\item  \textbf{Randomization} of coordinate updates.
+\end{itemize}
+These methods are reviewed in \S?? below.
+
+\pkg~is not a modeling language but an algorithm development toolbox. %does not reduce a problem automatically into these algorithms. 
+We demonstrate the usage of the toolbox in the following examples:
+ Linear system of equations;
+Quadratic programming;
+$\ell_1$ and $\ell_2$ regularized  regression / empirical risk minimization;
+Support vector machine;
+Portfolio optimization;
+and Nonnegative matrix factorization.
+\pkg~ can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
+
+\subsection{Coding and design}
+\pkg~leverages the C++11 standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading invariant to operating system. \pkg~ can be compiled by  a  standard C++ compilers  under Linux, Mac, and Windows. Our code base is separated into layers, executables, multicore drivers, schemes, operators, and linear algebra.  Using \pkg~ is as simple as following clear rules for composing objects from each layer. 
+Therefore, our codes  are shorter, cleaner, and thus easier to read and modify. 
+
+(make this a commen on linear algebra)For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...  
+
+We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, or (asynchronous) parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The multicore drivers execute the coordinate update mappings. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
+The above functionalities are supported by our novel modular architecture.   
+
+%of  multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
+%The library reduces the barrier to entry on doing async-parallel computing. Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
+ 
+% \pkg supports a wide range of prebuilt applications, including, but not limited to, 
+%linear equations, $\ell_1$ and $\ell_2$ regularized logistic regression, portfolio optimization, 
+%Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization.
+
+\subsection{Download and installation}
+The \pkg~package is maintained on GitHub at \url{http://}, which provides installation instructions for Linux, Mac, and Windows operating systems. 
+\subsection{Literature}
+\subsection*{Operator splitting methods:}  These methods solve complicated optimization and monotone inclusion problems by simple simple subproblems. They started to appear in 1950s for  solving partial differential equations and feasibility problems and were rapidly developed during the 1960s-1980s. Several splitting methods such as Forward-Backward, Douglas-Rachford  (which is equivalent to ADMM \cite{?,?}), and Peaceman-Rachford were introduced. Recently,
+operator splitting methods such as ADMM and Split Bregman have found new applications in image processing,
+statistical and machine learning, compressive sensing, and control. New methods such as primal-dual splitting, three-operator splitting, and ...... have appeared, and they are designed to  solve more complicated problems.
+
+Software packages based on operator splitting  .... include TFOCS .....
+
+\subsection*{Coordinate update methods:}
+As the name suggests, these methods update the selected one, or a few, elements of the variable at each iteration. The original  coordinate update method developed in 1950s only minimizes the original objective function with respect to the selected coordinates. The later developments have allowed to minimize other functions that are often easier or more efficient. Lately, coordinate descent has been extended so that each update no longer minimizes a function, but instead the update is based on an operator, such as the coordinate projection of an operator or a coordinate-wise fixed-point to an operator. Hence, we call in coordinate update instead of coordinate descent. 
+
+The initial coordinate selection rule  is   cyclic selection. It was widely used before other rules such as shuffled cyclic, greedy, parallel, and randomized appear. (one or two more sentences.)
+
+Coordinate descent for function minimization has been implemented in the following software packages: 
+
+\subsection*{Asynchronous parallel methods:}  
+
+In  parallel algorithms, the multiple threads need to communicate. An algorithm is synchronous if all the  threads must finish computing before they exchange data, and only after the exchange is done can they start the next computing cycle. When the threads run on multiple cores, synchronization requires every core to wait for the slowest core
+(or the one solving the most difficult subproblem) to be communicated,  leading to so-called  bus contention. The threads in an asynchronous parallel algorithm, however, can run continuously; they can compute with whatever information they have, even if the latest information from other agents
+have not arrived; they write their results to the shared memory while other threads are still computing. They do not wait for each other.
+
+Synchronous parallel algorithms are easy to control and are efficient if the cores have balanced loads; asynchronous  ones are difficult to control and, if properly controlled, are faster and insensible to load imbalance.
+
+(Citations and software)
+
+\subsection{Old}
 Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
 These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. 
 Though CU methods have different settings and convergence properties,  the monotone operator theory can unify them into a single abstract framework. 
