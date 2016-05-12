@@ -13,7 +13,7 @@ Specifically, \pkg~implements  algorithms based on  the following methods:
 \end{itemize}
 These methods are reviewed in \S?? below.
 
-\pkg~is not a modeling language but a algorithm development toolbox. %does not reduce a problem automatically into these algorithms. 
+\pkg~is not a modeling language but an algorithm development toolbox. %does not reduce a problem automatically into these algorithms. 
 We demonstrate the usage of the toolbox in the following examples:
  Linear system of equations;
 Quadratic programming;
@@ -21,16 +21,16 @@ $\ell_1$ and $\ell_2$ regularized  regression / empirical risk minimization;
 Support vector machine;
 Portfolio optimization;
 and Nonnegative matrix factorization.
-\pkg~can use multiple cores to solve these  problems because it exploits the underlying structures of the problems and obtains very simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
+\pkg~ can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
 
 \subsection{Coding and design}
-\pkg~leverages the recent advances in parallel coding, striking for both efficiency and code readability. The package was written under the C++11 standard, which comes with built multi-threading support. It can be compiled by  a  standard C++ compilers  under Linux, Mac, and Windows. (add object oriented.) %Compared to the traditional C and C++ codes, 
+\pkg~leverages the C++11 standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading invariant to operating system. \pkg~ can be compiled by  a  standard C++ compilers  under Linux, Mac, and Windows. Our code base is separated into layers, executables, multicore drivers, schemes, operators, and linear algebra.  Using \pkg~ is as simple as following clear rules for composing objects from each layer. 
 Therefore, our codes  are shorter, cleaner, and thus easier to read and modify. 
 
-For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...  
+(make this a commen on linear algebra)For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...  
 
-We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, or (asynchronous) parallel algorithm  with little effort. The user only needs to specify a function, or an operator, either from a provided list or plugging their own implementations. The implemented operator-splitting module takes standard ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The implemented coordinate-update module also accepts these  operators once its coordinate mapping is specified. Furthermore, (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
-The above functionalities are supported by a  novel modular architecture, which divides the package into several modules that are seamlessly connected.   
+We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, or (asynchronous) parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The multicore drivers execute the coordinate update mappings. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
+The above functionalities are supported by our novel modular architecture.   
 
 %of  multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
 %The library reduces the barrier to entry on doing async-parallel computing. Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
