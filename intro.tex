@@ -1,7 +1,6 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Introduction}
-(a list of problems we can solve)
-\pkg~is a toolbox for optimization that implements algorithms based on a set of modern methods for large-scale optimization. The toolbox covers a variety of optimization problems, which can  be both smooth and nonsmooth, convex and nonconvex, as well as constrained and unconstrained.  \pkg~is designed for fast prototyping of scalable algorithms, which can be  single-threaded or multi-threaded, and the multi-threaded code can run both synchronously (the standard kind) and asynchronously. 
+\pkg~is a toolbox for optimization that implements algorithms based on a set of modern methods for large-scale optimization. The toolbox covers a variety of optimization problems, which can  be both smooth and nonsmooth, convex and nonconvex, as well as constrained and unconstrained.  \pkg~is designed for fast prototyping of scalable algorithms, which can be  single-threaded or multi-threaded, and the multi-threaded code can run either synchronously or asynchronously. 
 
 Specifically, \pkg~implements  algorithms based on  the following methods:
 \begin{itemize}
@@ -17,20 +16,19 @@ These methods are reviewed in \S?? below.
 We demonstrate the usage of the toolbox in the following examples:
  Linear system of equations;
 Quadratic programming;
-$\ell_1$ and $\ell_2$ regularized  regression / empirical risk minimization;
+Empirical risk minimization (e.g. $\ell_1$ and $\ell_2$ regularized  regression);
 Support vector machine;
 Portfolio optimization;
-and Nonnegative matrix factorization.
+and Nonnegative matrix factorization. \commzp{Brent, fixed wording.}
 \pkg~ can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
 
 \subsection{Coding and design}
-\pkg~leverages the C++11 standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading invariant to operating system. \pkg~ can be compiled by  a  standard C++ compilers  under Linux, Mac, and Windows. Our code base is separated into layers, executables, multicore drivers, schemes, operators, and linear algebra.  Using \pkg~ is as simple as following clear rules for composing objects from each layer. 
-Therefore, our codes  are shorter, cleaner, and thus easier to read and modify. 
+\pkg~leverages the C++11 standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading invariant to operating system. \pkg~ can be compiled by standard C++ compilers  under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...}.  Using \pkg~is used by composing objects from each layer. 
+Therefore, our codes  are short, clean, and thus easy to read and modify. \commzp{Brent will fix this.}
 
-(make this a commen on linear algebra)For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...  
 
-We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, or (asynchronous) parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The multicore drivers execute the coordinate update mappings. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
-The above functionalities are supported by our novel modular architecture.   
+%We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The multicore drivers execute the coordinate update mappings. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
+%The above functionalities are supported by our novel modular architecture.   
 
 %of  multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
 %The library reduces the barrier to entry on doing async-parallel computing. Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
@@ -65,29 +63,29 @@ Synchronous parallel algorithms are easy to control and are efficient if the cor
 
 (Citations and software)
 
-\subsection{Old}
-Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
-These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. 
-Though CU methods have different settings and convergence properties,  the monotone operator theory can unify them into a single abstract framework. 
-Specifically, CU method can be reduced to the coordinate update of a fixed-point iteration. 
-
-
-Existing CU solvers \citep{hsieh2015passcode,jaggi2014communication,recht2011hogwild} either focus on very particular problems or do not scale to large-sized problems due to their sequential implementation. 
-Adapting them to solve slightly different large-sized problems requires significant human effort. 
-It is of interest to investigate a method for leveraging their common aspects CU methods applied to different problems, and simplify the implementation process for any new applications. (highlight we cover a broader range of problems).
-
-(We provide an architecture amendable for prototyping new solvers.)
-
-(We implemented in C++ with the new C++11 standard for its agonostic to different plateforms. Mention that the naming and readability are nice, interface with BLAS therefore, we have the best performance of linear algebra functions) 
-
-In this paper, we present ARock, a C++ library to simplify the implementation of both sequential and parallel coordinate update algorithms. It is a realization of the CF framework~\citep{peng2016coordinate} and the async-parallel framework~\citep{peng2015arock}. Parallelism of ARock is empowered by the thread library from the \texttt{C++11} standard. The novelty of ARock is the introduction of a multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
-The library reduces the barrier to entry on doing async-parallel computing. 
-Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
-
- 
-The solvers of these applications can be interacted through easy-to-use command-line tools. 
-Other features of ARock include a rich set of operators, comprehensive documentation, and easy-to-use library calls.
-
-
-
-(outline of the paper)
+%\subsection{Old}
+%Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
+%These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. 
+%Though CU methods have different settings and convergence properties,  the monotone operator theory can unify them into a single abstract framework. 
+%Specifically, CU method can be reduced to the coordinate update of a fixed-point iteration. 
+%
+%
+%Existing CU solvers \citep{hsieh2015passcode,jaggi2014communication,recht2011hogwild} either focus on very particular problems or do not scale to large-sized problems due to their sequential implementation. 
+%Adapting them to solve slightly different large-sized problems requires significant human effort. 
+%It is of interest to investigate a method for leveraging their common aspects CU methods applied to different problems, and simplify the implementation process for any new applications. (highlight we cover a broader range of problems).
+%
+%(We provide an architecture amendable for prototyping new solvers.)
+%
+%(We implemented in C++ with the new C++11 standard for its agonostic to different plateforms. Mention that the naming and readability are nice, interface with BLAS therefore, we have the best performance of linear algebra functions) 
+%
+%In this paper, we present ARock, a C++ library to simplify the implementation of both sequential and parallel coordinate update algorithms. It is a realization of the CF framework~\citep{peng2016coordinate} and the async-parallel framework~\citep{peng2015arock}. Parallelism of ARock is empowered by the thread library from the \texttt{C++11} standard. The novelty of ARock is the introduction of a multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
+%The library reduces the barrier to entry on doing async-parallel computing. 
+%Users of ARock can either use the prebuilt solvers or build their own async-parallel solvers by simply knowing a few concepts of classic optimization formulations and algorithms.
+%
+% 
+%The solvers of these applications can be interacted through easy-to-use command-line tools. 
+%Other features of ARock include a rich set of operators, comprehensive documentation, and easy-to-use library calls.
+%
+%
+%
+%(outline of the paper)

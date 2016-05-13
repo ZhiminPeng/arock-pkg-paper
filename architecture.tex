@@ -8,37 +8,36 @@ An Interface decouples the usage of the object from the implementation of the ob
 
 \subsection{Drivers}
 
-As seen in example blank on line blank, The  arock driver, takes as input, a solver object, and a parameters object.
+As seen in Section~\ref{sec:quick_start}, the \pkg~driver, takes as input, a solver object, and a parameters object.
 The parameter object determines the how coordinate are chosen, how many iterations to run the solver, and the stepsizes associated with the solver.
 Coordinate choices include *list*.
 The paremeter object also determines the multicore functionality. 
-Based upon the parameter object, arock launches worker threads, threads that interact with the solver object, and a controller thread, a thread that manages the worker threads.
+Based upon the parameter object, \pkg~launches worker threads, threads that interact with the solver object, and a controller thread, a thread that manages the worker threads.
   
 
 \subsection{Kernel}
 
 For each type of coordinate choice, there is a corresponding worker thread.
-A worker thread iteratively chooses an index, and, using the solver object, computes a coordinate update to the solution.
+A worker thread iteratively chooses an index, and, using a scheme object, computes a coordinate update.
 The controller thread manages the worker threads by choosing stepsizes to accelerate convergence.
-The controller thread monitors convergence by maintaining an approximate fixed point residual of the current solution.
+The controller thread monitors convergence by maintaining an approximate fixed point residual.
 
-\subsection{Solvers}
-
-Solvers are objects with, at minimum, member functions as defined by the Solver interface.
+\subsection{Schemes}
+Schemes are objects with, at minimum, member functions as defined by the scheme interface.
 insert link to interface.
-Kernel and Driver interact with solvers through the Solver interface.
+Kernel and Driver interact with schemes through the scheme interface.
 
-Constructing as solver object is shown in example blank line blank.
-Solvers are constructed from operator objects, and a solution variable.
-The operator objects are used to define the coordinate update of the solver.
-By providing a coordinate to the solver object, a coordinate update is applied to the solution variable.
+Constructing as scheme object is shown in example blank line blank.
+Schemes are constructed from operator objects, and a solution variable.
+The operator objects are used to define the coordinate update of the scheme.
+By providing a coordinate to the scheme object, a coordinate update is applied to the solution variable.
 
 
 \subsection{Operators}
 
 Operators are objects with, at minimum, member functions as defined by the Operator Interface.
 inert link to interface.
-Solvers interact with Operator objects through the Operator Interface.
+Schemes interact with Operator objects through the Operator Interface.
 
 Constructing an Operator object is shown in example blank line blank.
 For example, to compute the forward gradient of logisitic loss *reference equation* require the matrix A, and to maintain computational efficiency the cached variable Ax (See CFU for why Ax is stored). Note that data is passed by pointer into operator objects to prevent unnecessary copying of objects.  
@@ -47,8 +46,8 @@ Operators, to allow for different data respresentation are templatized.
 \subsection{Data}
 
 Data is represented as either sparse or dense matrices and vectors.
-We use eigen package to represent sparse matrices and vectors. 
-Sparse linear algebra is provided through an interface to eigen.
+We use Eigen package to represent sparse matrices and vectors. 
+Sparse linear algebra is provided through an interface to Eigen.
 Dense linear algebra is provided through an interface to BLAS. 
 
 
