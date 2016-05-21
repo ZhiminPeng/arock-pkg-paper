@@ -6,9 +6,10 @@ Specifically, \pkg~implements  algorithms based on  the following methods:
 \begin{itemize}
 \item \textbf{Operator splitting}: a collection of methods that decompose problems in simple subproblems. The original problem often takes the following forms: (i) minimizing $f_1(x)+\cdots+f_n(x)$, (ii) $0\in T_1(x)+\cdots +T_n(x)$, and (iii) minimizing $f_1(x_1)+\cdots+f_n(x_n)$ subject to linear constraints $A_1 x_1+\cdots A_m x_m=b$. In addition, any function $f_i$ can compose with a linear operator, e.g. $f(x) = g(Ax)$.
 
-\item \textbf{Coordinate (descent) update}: a collection of methods that find a solution $x$ by updating one, or a few, of its elements each time.
-\item \textbf{Parallelization} of numerical linear algebra or coordinate updates;
-\item  \textbf{Randomization} of coordinate updates.
+\item \textbf{Coordinate update}: a collection of methods that find a solution $x$ by updating one, or a few, of its elements each time. The coordinates can be selected according to the random, cyclic, shuffled cyclic, and greedy rules.
+ 
+\item \textbf{Parallel} numerical linear algebra procedures or coordinate updates.
+%\item  \textbf{Random} coordinate updates.
 \end{itemize}
 These methods are reviewed in \S?? below.
 
@@ -16,16 +17,14 @@ These methods are reviewed in \S?? below.
 We demonstrate the usage of the toolbox in the following examples:
  Linear system of equations;
 Quadratic programming;
-Empirical risk minimization (e.g. $\ell_1$ and $\ell_2$ regularized  regression);
-Support vector machine;
-Portfolio optimization;
-and Nonnegative matrix factorization. \commzp{Brent, fixed wording.}
-\pkg~ can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
+empirical risk minimization (e.g. $\ell_1$ and $\ell_2$ regularized  regression);
+support vector machine;
+portfolio optimization;
+and nonnegative matrix factorization. \pkg~can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
 
 \subsection{Coding and design}
-\pkg~leverages the C++11 standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading invariant to operating system. \pkg~ can be compiled by standard C++ compilers  under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...}.  Using \pkg~is used by composing objects from each layer. 
-Therefore, our codes  are short, clean, and thus easy to read and modify. \commzp{Brent will fix this.}
-
+\pkg~leverages the C++11 standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading that is invariant to operating system. \pkg~can be compiled by standard C++ compilers  under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ...}.  Using \pkg~is used by composing objects from each layer. 
+Therefore, our codes  are short, clean, and thus easy to read and modify.
 
 %We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The multicore drivers execute the coordinate update mappings. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
 %The above functionalities are supported by our novel modular architecture.   
@@ -38,20 +37,19 @@ Therefore, our codes  are short, clean, and thus easy to read and modify. \commz
 %Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization.
 
 \subsection{Download and installation}
-The \pkg~package is maintained on GitHub at \url{http://}, which provides installation instructions for Linux, Mac, and Windows operating systems. 
+The \pkg~package can be access from GitHub at \url{http://}. The package runs on Linux, Mac, and Windows operating systems. 
 \subsection{Literature}
-\subsection*{Operator splitting methods:}  These methods solve complicated optimization and monotone inclusion problems by simple simple subproblems. They started to appear in 1950s for  solving partial differential equations and feasibility problems and were rapidly developed during the 1960s-1980s. Several splitting methods such as Forward-Backward \cite{Passty1979_ergodic}, Douglas-Rachford \cite{DR56} (which is equivalent to ADMM \cite{GabayMercier1976_dual,GlowinskiMarroco1975_lapproximation}), and Peaceman-Rachford \cite{PR} were introduced. Recently,
-operator splitting methods such as ADMM and Split Bregman \cite{GoldsteinOsher2009_split} (also see \cite{WangYangYinZhang2008_NewAlternating}) have found new applications in image processing,
-statistical and machine learning, compressive sensing, and control. New methods such as primal-dual splitting \cite{Condat2013_primaldual,Vu2013_splitting}, three-operator splitting \cite{DavisYin2015_threeoperator}, and other primal-dual splitting methods \cite{ChenHuangZhang2016_primaldual,ChenHuangZhang2016_primalduala,LiShenXuZhang2015_multistep} have appeared, and they are designed to  solve more complicated problems.
+\subsection*{Operator splitting methods:}  These methods solve complicated optimization and monotone inclusion problems by simple subproblems. They started to appear in 1950s for  solving partial differential equations and feasibility problems and were rapidly developed during the 1960s--1980s. Several splitting methods such as Forward-Backward \citep{Passty1979_ergodic}, Douglas-Rachford \citep{DR56} (which is equivalent to ADMM \citep{GabayMercier1976_dual,GlowinskiMarroco1975_approximation}), and Peaceman-Rachford \citep{PR} were introduced. Recently,
+operator splitting methods such as ADMM and Split Bregman \citep{GoldsteinOsher2009_split} (also see \citep{WangYangYinZhang2008_NewAlternating}) have found new applications in image processing,
+statistical and machine learning, compressive sensing, and control. New methods such as primal-dual splitting \citep{Condat2013_primaldual,Vu2013_splitting}, three-operator splitting \citep{DavisYin2015_threeoperator}, and other primal-dual splitting methods \citep{ChenHuangZhang2016_primaldual,ChenHuangZhang2016_primalduala,LiShenXuZhang2015_multistep} have appeared, and they are designed to solve more complicated problems.
 
-%Software packages based on operator splitting  .... include TFOCS \cite{BeckerCandesGrant2011_TemplatesConvex} .....
+%Software packages based on operator splitting  .... include TFOCS \citep{BeckerCandesGrant2011_TemplatesConvex} .....
 
 \subsection*{Coordinate update methods:}
-As the name suggests, these methods update the selected one, or a few, elements of the variable at each iteration. The original  coordinate update method \cite{Hildreth1957_quadratic,Warga1963_minimizing,SargentSebastian1973_convergence,LuoTseng1992_convergence} developed in 1950s and analyzed since then only minimizes the original objective function with respect to the selected coordinates. The later developments such as \cite{GrippoSciandrone2000_convergence,TsengYun2009_coordinate,TsengYun2009_blockcoordinate,XuYin2013_block,BolteSabachTeboulle2014_proximal} have allowed to minimize other functions that are often easier or more efficient. Lately, coordinate descent has been extended so that each update no longer minimizes a function, but instead the update is based on an operator, such as the coordinate projection of an operator or a coordinate-wise fixed-point to an operator \cite{CombettesPesquet2015_stochastic,BianchiHachemFranck2014_stochastic,PengXuYanYin2015_arock,PengWuXuYanYin2016_coordinate}. Hence, we call in coordinate update instead of coordinate descent. 
+As the name suggests, these methods update the selected one, or a few, elements of the variable at each iteration. The original  coordinate update method \citep{Hildreth1957_quadratic,Warga1963_minimizing,SargentSebastian1973_convergence,LuoTseng1992_convergence} developed in 1950s and analyzed since then only minimizes the original objective function with respect to the selected coordinates. The later developments such as \citep{GrippoSciandrone2000_convergence,TsengYun2009_coordinate,TsengYun2009_blockcoordinate,XuYin2013_block,BolteSabachTeboulle2014_proximal} have allowed to minimize other functions that are often easier or more efficient. Lately, coordinate descent has been extended so that each update no longer minimizes a function, but instead the update is based on an operator, such as the coordinate projection of an operator or a coordinate-wise fixed-point to an operator \citep{CombettesPesquet2015_stochastic,BianchiHachemFranck2014_stochastic,PengXuYanYin2015_arock,PengWuXuYanYin2016_coordinate}. Hence, we call it coordinate update instead of coordinate descent. 
 
-The initial coordinate selection rule  is cyclic selection. It was widely used before other rules such as random \cite{Nesterov2012_efficiency,RichtarikTakac2014_iteration,LuXiao2015_complexity}, shuffled cyclic, greedy \cite{BertsekasBertsekas1999_nonlinear,LiOsher2009_coordinate,TsengYun2009_coordinate,PengYanYin2013_parallel,NutiniSchmidtLaradjiFriedlanderKoepke2015_coordinate}, and parallel \cite{BradleyKyrolaBicksonGuestrin2011_parallel,RichtarikTakac2016_parallel} appear. (one or two more sentences.)
+The initial coordinate selection rule  is cyclic selection. It was widely used before other rules such as random \citep{Nesterov2012_efficiency,RichtarikTakac2014_iteration,LuXiao2015_complexity}, shuffled cyclic, greedy \citep{BertsekasBertsekas1999_nonlinear,LiOsher2009_coordinate,TsengYun2009_coordinate,PengYanYin2013_parallel,NutiniSchmidtLaradjiFriedlanderKoepke2015_coordinate}, and parallel \citep{BradleyKyrolaBicksonGuestrin2011_parallel,RichtarikTakac2016_parallel} started to appear and gain popularity.
 
-Coordinate descent for function minimization has been implemented in the following software packages: 
 
 \subsection*{Asynchronous parallel methods:}  
 
@@ -61,8 +59,8 @@ have not arrived; they write their results to the shared memory while other thre
 
 Synchronous parallel algorithms are easy to control and are efficient if the cores have balanced loads; asynchronous  ones are difficult to control and, if properly controlled, are faster and insensible to load imbalance.
 
-(Citations and software)
-
+\subsection*{Software packages:}
+TOFCS, SCS 
 %\subsection{Old}
 %Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
 %These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems. 
