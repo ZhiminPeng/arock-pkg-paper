@@ -55,9 +55,14 @@ The initial coordinate selection rule  is cyclic selection. It was widely used b
 
 In  parallel algorithms, the multiple threads need to communicate. An algorithm is synchronous if all the  threads must finish computing before they exchange data, and only after the exchange is done can they start the next computing cycle. When the threads run on multiple cores, synchronization requires every core to wait for the slowest core
 (or the one solving the most difficult subproblem) to be communicated,  leading to so-called  bus contention. The threads in an asynchronous parallel algorithm, however, can run continuously; they can compute with whatever information they have, even if the latest information from other agents
-have not arrived; they write their results to the shared memory while other threads are still computing. They do not wait for each other.
+have not arrived; they write their results to the shared memory while other threads are still computing. They do not wait for each other. Async-parallel can be traced back to~\citep{chazan1969chaotic} for solving systems of linear equations.
+For function minimization,~\citep{bertsekas1989parallel} introduced an async-parallel gradient projection method. Convergence rates are obtained in~\citep{tseng1991rate-asyn}.
 
-Synchronous parallel algorithms are easy to control and are efficient if the cores have balanced loads; asynchronous  ones are difficult to control and, if properly controlled, are faster and insensible to load imbalance.
+For fixed-point problems, async-parallel methods date back to~\citep{baudet1978asynchronous}. In  the pre-2010 methods \citep{BMR1997asyn-multisplit,bertsekas1983distributed,Baz200591,el1998flexible} and the review~\citep{frommer2000asynchronous}, each agent updates its own subset of coordinates. Convergence is established under the \emph{$P$-contraction} condition and its variants~\citep{bertsekas1983distributed}. Recently, the works \citep{nedic2001distributed,recht2011hogwild,liu2013asynchronous,liu2014asynchronous,hsieh2015passcode} introduced async-parallel stochastic methods for function minimization.
+For fixed-point problems,~\citep{PengXuYanYin2015_arock} introduced  async-parallel stochastic methods, as well as several applications in optimization. 
+
+
+%Synchronous parallel algorithms are easy to control and are efficient if the cores have balanced loads; asynchronous  ones are difficult to control and, if properly controlled, are faster and insensible to load imbalance. 
 
 \subsection*{Software packages:}
 TOFCS, SCS 
