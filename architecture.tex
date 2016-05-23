@@ -1,55 +1,84 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Architecture}
 
-The toolbox can be broken into different layers. 
-The layering is enforced through the usage of Interfaces.
-Interfaces are a list of member functions guaranteed to exist in an object.
-An Interface decouples the usage of the object from the implementation of the object. 
+The toolbox can be broken into the following layers: Multicore Drivers, Kernels, Schemes, Operators, and Linear Algebra.
+Each layer represents a different mathematical component. 
+Object in each layer interact through as set of assumed functionality, their interface.
+Consider the Interface for the Operator object:
 
-\subsection{Drivers}
+\begin{lstlisting}[language=C++,label={Operator_Interface}]
+struct Operator_Interface {
+   // returns the operator evaluated on v at the given index
+   double operator() (Vector* v, int index);
+  // returns the operator evaluated on v at the given index
+   double operator() (double val, int index);
+  //applies full operator to v_in and write it to v_out
+   void operator() (Vector* v_in, Vector* v_out);
+  //optional: see CFU paper
+  void update_cache_vars (double old_x_i, double new_x_i, int index);
+  // update the step size
+   void update_step_size (double step_size_) ;
+ };
+\end{lstlisting}
 
-As seen in example blank on line blank, The  arock driver, takes as input, a solver object, and a parameters object.
-The parameter object determines the how coordinate are chosen, how many iterations to run the solver, and the stepsizes associated with the solver.
-Coordinate choices include *list*.
-The paremeter object also determines the multicore functionality. 
-Based upon the parameter object, arock launches worker threads, threads that interact with the solver object, and a controller thread, a thread that manages the worker threads.
+For an object to belong to the Operator layer, it must have these functions and constructors defined.
+Attempting to use an object as an Operator that does not have the functionality defined by the Operator Interface will result in compiler errors.
+Note that the Operator Intefarce only includes the function declarations, not the implementation of the functions themselves.
+
+The following is a brief description of each layer and how it interacts with the layers above and below it.
+
+\subsection{Multicore Drivers}
+
+As seen in Section~\ref{sec:quick_start}, the \pkg~driver, takes as input, a scheme object, and a parameters object.
+The parameter object determines how coordinate are chosen, how many iterations to run the solver, and the stepsizes associated with the solver.
+Coordinate choices include cyclic, block cyclic, and randomized block.
+The parameter object also determines the multicore functionality. 
+Based upon the parameter object, \pkg~launches worker threads, threads that interact with the solver object to produce coordinate updates, and a controller thread, a thread that manages the worker threads.
   
 
 \subsection{Kernel}
 
-For each type of coordinate choice, there is a corresponding worker thread.
-A worker thread iteratively chooses an index, and, using the solver object, computes a coordinate update to the solution.
+For each coordinate choice rule, there is a corresponding worker thread.
+A worker thread iteratively chooses an index according to its rule, and, using a scheme object, computes a coordinate update.
 The controller thread manages the worker threads by choosing stepsizes to accelerate convergence.
-The controller thread monitors convergence by maintaining an approximate fixed point residual of the current solution.
+The controller thread monitors convergence by maintaining an approximate fixed point residual.
 
-\subsection{Solvers}
+\subsection{Schemes}
+Schemes are objects with, at minimum, member functions as defined by the Scheme Interface.
 
-Solvers are objects with, at minimum, member functions as defined by the Solver interface.
-insert link to interface.
-Kernel and Driver interact with solvers through the Solver interface.
-
-Constructing as solver object is shown in example blank line blank.
-Solvers are constructed from operator objects, and a solution variable.
-The operator objects are used to define the coordinate update of the solver.
-By providing a coordinate to the solver object, a coordinate update is applied to the solution variable.
-
+\begin{lstlisting}[language=C++]
+struct Scheme_Interface {
+void update_params(Params* params);
+double operator() (int index);
+};
+\end{lstlisting}
+By providing a coordinate to the scheme object, a coordinate update is applied to the solution variable.
+ The Scheme Interface is very lightweight, as schemes can be quite varied in nature.
+ We provide implemenations of the following schemes: \texttt{ForwardBackwardSplitting}, \texttt{ProximalPointAlgorithm},  \texttt{GradientDescent}, \texttt{BackwardForwardSplitting}, and \hfill \break      \texttt{PeacemanRachfordSplitting}.
+Mathematically, Schemes are recipes for coordinate update.
+To provide similar code functionality, schemes are templatized.  
+For example, in \ref{fbs_l1_log_code} the type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}. 
+Different arguments to the template result in different versions of the scheme. 
 
 \subsection{Operators}
 
-Operators are objects with, at minimum, member functions as defined by the Operator Interface.
-inert link to interface.
-Solvers interact with Operator objects through the Operator Interface.
+Operators are objects with, at minimum, member functions as defined by \ref{Operator_Interface}, the Operator Interface.
+The construction of an Operator object depends upon what is necessary to compute its coordinate update efficiently.
+For example, \texttt{forward\_grad\_for\_log\_loss<SpMat>} requires the matrix \texttt{A}, the vector \texttt{b}, a stepsize \texttt{eta},  and, to maintain computational efficiency, the cached variable \texttt{Atx}.
+In some cases the data may be dense, sparse, or best represented by a function (consider the wavelet tranform).
+Operators, to allow for different data respresentations, are templatized on their data.
+The matrix \texttt{A}, in this example, is sparse.
 
-Constructing an Operator object is shown in example blank line blank.
-For example, to compute the forward gradient of logisitic loss *reference equation* require the matrix A, and to maintain computational efficiency the cached variable Ax (See CFU for why Ax is stored). Note that data is passed by pointer into operator objects to prevent unnecessary copying of objects.  
-Operators, to allow for different data respresentation are templatized.
 
-\subsection{Data}
 
-Data is represented as either sparse or dense matrices and vectors.
-We use eigen package to represent sparse matrices and vectors. 
-Sparse linear algebra is provided through an interface to eigen.
+
+\subsection{Linear Algebra}
+
+We use Eigen package to represent sparse matrices and vectors. 
+Sparse linear algebra is provided through an interface to Eigen and Sparse BLAS.
 Dense linear algebra is provided through an interface to BLAS. 
+
+
 
 
 
