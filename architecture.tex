@@ -1,56 +1,41 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Architecture}
 
-The toolbox can be broken into the following layers: Multicore Drivers, Kernels, Schemes, Operators, and Linear Algebra.
-Each layer represents a different mathematical component. 
-To maintain the mathematical abstraction between layers, Interfaces are used when necessary. 
-Interfaces are a set of assumed functionality of a layer.
-Layers interact through their interfaces.
-Consider the Interface for the Operator object:
+The toolbox is designed to have several layers that represent different mathematical components, making it easy to understand, maintain, and upgrade by a user. Specifically, it has the following layers: Multicore Drivers, Kernels, Schemes, Operators, and Linear Algebra. 
+
+\subsection{Interfaces}
+To maintain the mathematical abstraction between layers, interfaces are used. Layers interact through their interfaces.
+Consider, for example,  the Operator Interface:
 
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
 struct Operator_Interface {
-   // returns the operator evaluated on v at the given index
+  // returns the operator evaluated on v at the given index
    double operator() (Vector* v, int index);
   // returns the operator evaluated on v at the given index
    double operator() (double val, int index);
-  //applies full operator to v_in and write it to v_out
+  // applies full operator to v_in and write it to v_out
    void operator() (Vector* v_in, Vector* v_out);
-  //optional: see CFU paper
+  // update the cached variables
   void update_cache_vars (double old_x_i, double new_x_i, int index);
   // update the step size
-   void update_step_size (double step_size_) ;
+  void update_step_size (double step_size_) ;
  };
 \end{lstlisting}
 
-For an object to belong to the Operator layer, it must have these functions defined.
-Attempting to use an object as an Operator that does not have the functionality defined by the Operator Interface will result in compiler errors.
-Note that the Operator Inteface only includes the function declarations, not the implementation of the functions themselves.
+The Operator Interface only includes the function declarations, not the implementation of the functions themselves. For an object to belong to the Operator layer, it must implement these functions.
 As a result, implementation is decoupled from usage.
-This allows for easy maintenance and specialization of code while not affecting the user's code.
+%This allows for easy maintenance and specialization of code while not affecting the user's code.
 
 The following is a brief description of each layer and how it interacts with the layers above and below it.
 
 \subsection{Multicore Drivers}
+The layer of Multicore Drivers is responsible of create threads (corresponding to agents in algorithm \ref{alg:fbs_l1_log}). If a controller (see later) is used, then a thread for the controller will also be created. When a thread is created, the layer grants it access to certain coordinates. Both thread creation and coordinate access are determined by the user-specified coordinate update scheme. For example, if the user specifies the random parallel scheme and ten threads, then ten threads (or nine threads plus a controller thread) will be created and each will  be granted to access all the coordinates (the ``random" selection rule will be passed to threads). Other schemes such as block-cyclic parallel, Gauss-Seidel parallel, as well as single-threaded schemes are implemented, too. 
 
+This layer is also responsible for waiting for all threads to complete before returning the result to the user and terminating the algorithm.    
 
-Consider algorithm \ref{alg:fbs_l1_log}.
- The algorithm assumes the existence of computing agents.
-The Multicore Drivers  layer is responsible for the creation of agents.
-The  algorithm \ref{alg:fbs_l1_log} provides a concrete recipe for creating an agent: a coordinate update scheme, a coordinate choice rule, a stepsize, and an iteration count.
-At a high level, this section can be understood as a mapping from a coordinate update scheme to a multicore solver.
+Therefore, this layer can be understood as a mapping from a coordinate update scheme to a thread manager. Note that this layer leaves the operations inside each thread to the other layers. As such, any user-specified operators, splitting scheme, and parameters are passed transparently to the next layer.
 
-As seen in Section~\ref{sec:quick_start}, the \pkg~driver, takes as input a scheme object, and a parameters object.
-The parameters object determines how coordinates are chosen, how many iterations to run, and the stepsize.
-Coordinate choices include cyclic, block cyclic, and randomized block. 
-\pkg~launches creates  worker agents, agents that interact with the solver object to produce coordinate updates, and a controller agent, an agent that manages the worker threads.
-The number of worker agents is specified through the parameters object.
-Agents are realized as c++11 threads.
-
-Most users can treat the Multicore Drivers as black box functionality.
-As the details of a coordinate update scheme are packaged into a scheme object, our Multicore Drivers are insulated from most common code modficiations.
-In the case that a different coordinate rule or a specialization of work distribution is desired, the Multicore Driver layer must be understood at a lower level.
-To understand  Multicore Drivers later at a lower level, it is necessary to know how to launch and join threads.
+Most users can treat this layer as a black box. Only when a new coordinate update scheme or a new way to generate threads is desired, does the user need to make modifications to the code of this layer.
 
 
 \subsection{Kernel}

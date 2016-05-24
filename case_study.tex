@@ -42,9 +42,9 @@ implementing~\eqref{eq:fbs_l1_log} in an asynchronous parallel coordinate update
   \SetKwInOut{Input}{Input}\SetKwInOut{Output}{output}
   \Input{$A, b$ and $x$ are shared variables, $K > 0$.}
   \textbf{Initialization:} \\
-  \quad $\text{foward}(x) = x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$ // forward operator \\
+  \quad $\text{forward}(x) = x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$ // forward operator \\
   \quad $\text{backward}(x) = \prox_{\lambda \eta \|\cdot\|_1} (x)$ \hspace{32mm} // backward operator\\
-  \quad $\text{fbs}(x) = \text{backward}(\text{forward}(x))$  \hspace{29mm} // foward backward splitting \\
+  \quad $\text{fbs}(x) = \text{backward}(\text{forward}(x))$  \hspace{29mm} // forward backward splitting \\
   \While{each agent continuously}{
     \textbf{selects} $i \in \{1, ..., n\}$ based on some index rule \;
     \textbf{updates} $x_i = x_i - \eta (I - \text{fbs})_i (x)$ .
