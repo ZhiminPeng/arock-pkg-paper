@@ -2,8 +2,10 @@
 \section{Architecture}
 
 The toolbox can be broken into the following layers: Multicore Drivers, Kernels, Schemes, Operators, and Linear Algebra.
-Each layer represents a different mathematical component. To maintain the mathematical abstraction between layers, Interfaces are used when necessary. 
-Interfaces, a set of assume functionality of a layer, decouple a layer from the implementaiton details of the layers below it.
+Each layer represents a different mathematical component. 
+To maintain the mathematical abstraction between layers, Interfaces are used when necessary. 
+Interfaces are a set of assumed functionality of a layer.
+Layers interact through their interfaces.
 Consider the Interface for the Operator object:
 
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
@@ -23,21 +25,26 @@ struct Operator_Interface {
 
 For an object to belong to the Operator layer, it must have these functions defined.
 Attempting to use an object as an Operator that does not have the functionality defined by the Operator Interface will result in compiler errors.
-Note that the Operator Intefarce only includes the function declarations, not the implementation of the functions themselves.
+Note that the Operator Inteface only includes the function declarations, not the implementation of the functions themselves.
+As a result, implementation is decoupled from usage.
+This allows for easy maintenance and specialization of code while not affecting the user's code.
 
 The following is a brief description of each layer and how it interacts with the layers above and below it.
 
 \subsection{Multicore Drivers}
 
-There is an implied step in algorithm \ref{alg:fbs_l1_log}: the creation of the agents running the coordinate update scheme.
+
+Consider algorithm \ref{alg:fbs_l1_log}.
+ The algorithm assumes the existence of computing agents.
 The Multicore Drivers  layer is responsible for the creation of agents.
 The  algorithm \ref{alg:fbs_l1_log} provides a concrete recipe for creating an agent: a coordinate update scheme, a coordinate choice rule, a stepsize, and an iteration count.
 At a high level, this section can be understood as a mapping from a coordinate update scheme to a multicore solver.
 
-As seen in Section~\ref{sec:quick_start}, the \pkg~driver, takes as input, a scheme object, and a parameters object.
-The parameter object determines how coordinates are chosen, how many iterations to run, and the stepsize.
+As seen in Section~\ref{sec:quick_start}, the \pkg~driver, takes as input a scheme object, and a parameters object.
+The parameters object determines how coordinates are chosen, how many iterations to run, and the stepsize.
 Coordinate choices include cyclic, block cyclic, and randomized block. 
-Based upon the parameter object, \pkg~launches creates  worker agents, agents that interact with the solver object to produce coordinate updates, and a controller agent, an agent that manages the worker threads.
+\pkg~launches creates  worker agents, agents that interact with the solver object to produce coordinate updates, and a controller agent, an agent that manages the worker threads.
+The number of worker agents is specified through the parameters object.
 Agents are realized as c++11 threads.
 
 Most users can treat the Multicore Drivers as black box functionality.
