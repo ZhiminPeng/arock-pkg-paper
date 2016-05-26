@@ -4,13 +4,12 @@
 We consider the following Nonnegative Matrix Factorization problem
 
 \begin{equation*}
-	\min_{X \geq 0,Y \geq 0} \frac{1}{2}||A-X^T Y||_2^2
+	\Min_{X \geq 0,Y \geq 0} ~||A-X^T Y||_2^2,
 \end{equation*}
-
-where $A \in \Re^{mxn}$, $X \in \Re^{kxm}$ and $Y \in \Re^{kxm}$.
+where $A \in \RR^{m\times n}$, $X \in \RR^{k \times m}$ and $Y \in \RR^{k \times m}$.
 This problem, despite being nonconvex has a special form.
 The objecctive function  is block multiconvex\footnote{the objective function is convex when all but a few specific variables are held fixed} and it's reguralizers are separable.
-Recent work by Damek Davis (insert citation) has shown that this type of probelm can solved asynchronously.
+Recent work by Davis (insert citation) has shown that this type of problem can be solved asynchronously.
 As the problem is nonconvex, convergence is given to a local minimizer, not a global minimizer.
 
 We run MOTAC on a synthetic problem, $A=\hat X^T \hat Y$ ,  with $m=1000$ and $k=20$.
@@ -35,14 +34,17 @@ The following results are the averages resulting from 20 runs.
 
 
 To show scalability we increased the dimension of $k$, and tested the speedup.
-
-\begin{tabular}{llll}
+\begin{table}[!hb]
+\centering
+\begin{tabular}{rrrr}
  \toprule
 \textbf{threads}&\textbf{k=10}&\textbf{k=20}&\textbf{k=100}\\\cmidrule{1-4}
-1&1&1&1\\%\hline
-2&1.9782&1.9812&1.9805\\%\hline
-4&3.7514&3.7488&3.7631\\%\hline
-8&7.1240&7.3315&7.3521\\%\hline
-16&13.388&14.5113&14.43\\%\hline
+1&1.00&1.00&1.00\\%\hline
+2&1.97&1.98&1.98\\%\hline
+4&3.75&3.75&3.76\\%\hline
+8&7.12&7.33&7.35\\%\hline
+16&13.38&14.51&14.43\\%\hline
 \bottomrule
 \end{tabular}
+ \caption{\label{tab:nmf_res}Speedup results for nonnegative matrix factorization. }                  
+\end{table}

@@ -10,15 +10,15 @@ on the news20\footnote{ This dataset is from \url{http://www.csie.ntu.edu.tw/~cj
 dataset with 1 thread, 4 threads, and 16 threads respectively.
 \begin{lstlisting}[language=bash]
 # ------------------- running with 1 thread -----------------------#
-$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1. -nthread 1 
+$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 1 
 [some output skipped]
 Computing time  is: 29.53(s).
 # ------------------- running with 4 threads ----------------------#
-$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1. -nthread 4 
+$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 4 
 [some output skipped]
 Computing time  is: 11.01(s).
 # ------------------- running with 16 threads ---------------------#
-$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1. -nthread 16
+$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 16
 [some output skipped]
 Computing time  is: 3.87(s).
 \end{lstlisting}
@@ -31,8 +31,8 @@ codes for building \texttt{arock\_fbs\_l1\_log}.
 
 We solve \eqref{eq:l1_log} with the forward-backward splitting scheme
 \begin{equation}\label{eq:fbs_l1_log}
-  x^{k+1} = \underbrace{\prox_{\lambda \eta \|\cdot\|_1}}_{\text{backward operator}}
-  (\underbrace{x^k - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x^k)}_{\text{forward operator}}),
+  x^{k+1} = \underbrace{\prox_{ \eta \lambda \|\cdot\|_1}}_{\text{backward operator}}
+  (\underbrace{x^k - \eta \, \nabla_{x} \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x^k)}_{\text{forward operator}}),
 \end{equation}  
 where the gradient step of logistic loss and the proximal operator of $\ell_1$ norm correspond to the
 forward step and backward step respectively. Algorithm~\ref{alg:fbs_l1_log} shows the details of
@@ -40,18 +40,17 @@ implementing~\eqref{eq:fbs_l1_log} in an asynchronous parallel coordinate update
 
 \begin{algorithm}[H]\label{alg:fbs_l1_log}
   \SetKwInOut{Input}{Input}\SetKwInOut{Output}{output}
-  \Input{$A, b$ and $x$ are shared variables, $K > 0$.}
+  \Input{$A, b$ and $x$ are shared variables, $p$ agents, $K > 0$.}
   \textbf{Initialization:} \\
-  \quad $\text{foward}(x) = x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$ // forward operator \\
-  \quad $\text{backward}(x) = \prox_{\lambda \eta \|\cdot\|_1} (x)$ \hspace{32mm} // backward operator\\
-  \quad $\text{fbs}(x) = \text{backward}(\text{forward}(x))$  \hspace{29mm} // foward backward splitting \\
-  \While{each agent continuously}{
-    \textbf{selects} $i \in \{1, ..., n\}$ based on some index rule \;
-    \textbf{updates} $x_i = x_i - \eta (I - \text{fbs})_i (x)$ .
+  \quad $\text{foward}(x) := x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$ // forward operator \\
+  \quad $\text{backward}(x) := \prox_{\lambda \eta \|\cdot\|_1} (x)$ \hspace{33.5mm} // backward operator\\
+  \quad $\text{fbs}(x) := \text{backward}(\text{forward}(x))$  \hspace{30mm} // foward backward splitting \\
+  \While{each of the $p$ agents continuously}{
+    \textbf{selects} $i \in \{1, ..., n\}$ based on some index rule \\
+    \textbf{updates} $x_i \gets x_i - \eta \left(x_i - \text{fbs}_i (x)\right)$
   }
   \caption{\pkg~sparse logistic regression.}
 \end{algorithm}
-\commzp{Consider to write the next section as a mapping of the algorithm and the code.}
 The following snippet of code (extracted from 
 \texttt{apps/arock\_fbs\_l1\_log.cc}) implements Algorithm~\ref{alg:fbs_l1_log} with the \pkg~package. 
 Specifically, line 3 defines the \texttt{forward} object of type \texttt{forward\_grad\_for\_log\_loss<SpMat>} 
@@ -79,4 +78,8 @@ the following two lines
   prox_sum_square backward(eta, lambda);
   ForwardBackwardSplitting<forward_grad_for_log_loss<SpMat>, prox_sum_square> fbs(&x, forward, backward);    
 \end{lstlisting}
-solves the Tikhonov regularized logistic regression. Similar substitutions will result in a solve for the Lasso problem.
+solves the Tikhonov regularized logistic regression, i.e., 
+$$\Min_{x \in \RR^n} \lambda \|x\|_2^2 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right).$$
+Similar substitutions will result in a solver for the following Lasso problem
+$$\Min_{x \in \RR^n} \lambda \|x\|_1 + \frac{1}{2}\|A x - b\|^2.$$
+

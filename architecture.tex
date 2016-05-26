@@ -1,20 +1,18 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Architecture}
 
-Writing down an optimization method is very different from programming an optimization problem.
-Our toolbox's architecture is designed to mimic how a scientist writes down an optimization method.
+Writing a compute code is very different from writing down an optimization algorithm on paper.
+Our toolbox's architecture is designed to mimic how a scientist writes down an optimization algorithm.
 The toolbox achieves this by separating into the following layers: Linear Algebra, Operators, Schemes, Kernels, and Multicore Drivers.
 Each layer represents a different mathematical component of a multicore optimization method. 
 
 The following is a brief description of each layer and how it interacts with the layers above and below it.
 
-\subsection{Linear Algebra}
+\subsection{Numerical Linear Algebra}
 
-We use eigen, Sparse BLAS, and BLAS in our Toolbox.
-One can consider an optimization method as merely the algebraic steps involved in moving from one iteration to the next.
-However, optimization problems are usually modeled using higher level concepts.
-Mathematicians derive optimization methods in terms of classes of functions and operators.
-Similarily, we introduce a layer to insulate the user from the grit of raw numerical implementation. 
+We use eigen, Sparse BLAS, and BLAS in our Toolbox for basic 
+numerical linear algebra tasks such as dot products, norm calculation, matrix vector multiplication.
+For example, they implement $a_i^T x$ in Algorithm 1. This layer is called by the functions and operators in the higher layers. This layer is introduced to insulate the user from the grit of raw numerical implementation. 
 
 \subsection{Operators}
 
@@ -67,8 +65,8 @@ Every Scheme object is guaranteed to have the following functions defined:
 
 \begin{lstlisting}[language=C++]
 struct Scheme_Interface {
-void update_params(Params* params);
-double operator() (int index);
+  void update_params(Params* params);
+  double operator() (int index);
 };
 \end{lstlisting}
 
@@ -113,15 +111,6 @@ As the details of a coordinate update scheme are packaged into a scheme object, 
 In the case that a different coordinate rule or a specialization of work distribution is desired, the Multicore Driver layer must be understood at a lower level.
 To understand  Multicore Drivers later at a lower level, it is necessary to know how to launch and join threads.
 
-
-
-
-
-
-
-
-
-
 To maintain the mathematical abstraction between layers, Interfaces are used when necessary. 
 Interfaces are a set of assumed functionality of a layer.
 Layers interact through their interfaces.
@@ -129,16 +118,16 @@ Consider the Interface for the Operator object:
 
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
 struct Operator_Interface {
-   // returns the operator evaluated on v at the given index
-   double operator() (Vector* v, int index);
   // returns the operator evaluated on v at the given index
-   double operator() (double val, int index);
+  double operator() (Vector* v, int index);
+  // returns the operator evaluated on v at the given index
+  double operator() (double val, int index);
   //applies full operator to v_in and write it to v_out
-   void operator() (Vector* v_in, Vector* v_out);
+  void operator() (Vector* v_in, Vector* v_out);
   //optional: see CFU paper
   void update_cache_vars (double old_x_i, double new_x_i, int index);
   // update the step size
-   void update_step_size (double step_size_) ;
+  void update_step_size (double step_size_) ;
  };
 \end{lstlisting}
 
