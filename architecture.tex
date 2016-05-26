@@ -13,18 +13,18 @@ The following is a brief description of each layer and how it interacts with the
 We use eigen, Sparse BLAS, and BLAS in our Toolbox.
 Directly using efficient numerical packages like BLAS can be intimidating due to complex function calls. We provide simplified function calls for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
 
-If our provided functions are not sufficient, documentation for eigen, Sparse BLAS, and BLAS can be found in the following locations. As our codebase is growing, opening an issue on the github is suggested as well.
+If our provided functions are not sufficient, documentation for eigen, Sparse BLAS, and BLAS can be found in the following locations.
 
 \subsection{Operator}
 
-The Operator layer contains Forward Operator objects(gradient steps) and Backward Operator (proximal mappings) objects. These Operators types see heavy reuse throughtout optimization.
-For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
+The Operator Layer contains Forward Operator objects (gradient steps) and Backward Operator (proximal mappings) objects. These operators types see heavy reuse throughtout optimization.
+For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
 
-Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator layer insulates the user from the computational details of Operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. The Operator layer, as a result, allows users to reason and code at the level of Operators. Higher Layers use Operator objects as components in the creation of algorithms.
+Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. The Operator Layer, as a result, allows users to reason and code at the level of operators. The higher layers uses Operator objects as components in the creation of algorithms.
 
-As our Toolbox is designed for coordinate update methods, each Operator is implemented to compute coordinates efficiently. A coordinate or block of coordinates can be computed efficienty if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (ex: $(Ax)_i$ versus $Ax$). In some cases cacheing, the storing an intermediate computation, can improve the efficiency of a coordinate block (ex: $(A^TAx)_i$ versus $(ATy)_i$ where $y=Ax$). These ideas are formalized in CFU paper.  In the case that a Operator is needed that we have not implemented, a user can use CFU paper as a guide to  implementing their own Operator. 
+As our Toolbox is designed for coordinate update methods, each operator is implemented to compute coordinates efficiently. A coordinate or block of coordinates can be computed efficienty if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (e.g. $(Ax)_i$ versus $Ax$). In some cases caching, the storing an intermediate computation, can improve the efficiency of a coordinate block (e.g. $(A^TAx)_i$ versus $(A^Ty)_i$ where $y=Ax$). These ideas are formalized in CFU paper.  
 
-In the case that an Operator outside of the provided Operators is needed, the user can implement their own. Their are certain rules about implementing Operators that must be followed. see section
+In the case that an operator is needed that we have not implemented, a user can use CFU paper as a guide to  implementing their own operator. In addition, there are certain rules about operator implementation that must be followed. see section
  
 
 \subsection{Scheme}
@@ -37,9 +37,10 @@ Each object in the Scheme layer contains an optimization method's update equatio
 A Scheme's update equation is specialized to a problem by specifying Operators. We can see this in code snippet above {\color{red} Need a way to reference the code snippet, can we embed it in a figure?}.
 The scheme object \texttt{fbs} is specialized to sparse logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
   
-We provide implemenations of the following schemes: Forward Backward Splitting, Proximal Point Method,  Gradient Descent, Backward Forward Splitting, and Peaceman-Rachford Splitting.
+We provide implemenations of the following schemes:  Proximal Point Method,  Gradient Descent, Forward Backward Splitting, Backward Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
+
 If the provided schemes are not sufficient, the user may implement their own scheme.
-The user is encouraged to use objects from the Operator Layer as building blocks, but direct implementaiton using the Linear Algebra Layer is perfectly functional. Their are certain rules about implementing Schemes that must be followed. see section
+The user is encouraged to use objects from the Operator Layer as building blocks, but direct implementaiton using the Linear Algebra Layer is perfectly functional. Their are certain rules about implementing schemes that must be followed. see section
 
 
 
@@ -51,8 +52,8 @@ C++11 threads are created from functions.
 The Kernel Layer contains the functions used to create agents. 
 
 As can be seen in algorithm \ref{alg:fbs_l1_log}, an agent contains a scheme object and a coordinate choice rule.
-The agent chooses a coordinate according to its rule and combines the coordinate with the scheme to produce an update.
-For each coordinate choice rule, there is a corresponding function.
+The agent chooses a coordinate using its rule and the Scheme object uses the coordinate to produce an update.
+For each coordinate choice rule, we have implemented a corresponding function.
 
 We provide the following coordinate choice rules: cyclic, block cyclic, and randomized block. 
 If the user desires a different coordinate rule, they may implement their own function.
@@ -65,10 +66,10 @@ Once a scheme has been specified, agents are responsible for carrying out the ex
 However, agents must be created.
 The Multicore Driver layer is responsible for creating and managing agents. 
 For example, if the user chooses the randomized block coordinate rule and ten threads, the Multicore Driver will create ten threads using the user's specified scheme and the function in the Kernel layer corresponding to the randomized block coordinate rule. Decisions such as coordinate rule, iterations, and stepsize are passed to the Multicore Driver through a Params object.
-An example of this is found in code snippet, where \texttt{fbs} and texttt{params} are passed to the \texttt{MOTAC} driver. 
+An example of this is found in code snippet, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver. 
 
-Optionally, a Multicore Driver can launch a controller agent to manage the computing agents.
-A controller agent manages the worker agents by choosing stepsizes to accelerate convergence.
+Optionally, a Multicore Driver can launch a controller agent to control the computing agents.
+A controller agent controls the worker agents by choosing stepsizes to accelerate convergence.
 The current controller agent monitors convergence by maintaining an approximate fixed point residual.
 
 Most users can treat this layer as a black box. Only a new way to generate threads is desired, does the user need to make modifications to the code of this layer.
@@ -77,7 +78,7 @@ Most users can treat this layer as a black box. Only a new way to generate threa
 
 \subsection{Interaction between Layers}
 
-The Operator, Scheme, and Kernel Layers interact heavily with each other. To formalize interaction between each layer, we introduce Layer Interfaces. Layer Interfaces describe guaranteed member functions of objects within the Layer. As the behavior is guaranteed other Layers can safely use functions to interact. The Layer Interfaces allow for specialization of objects within each layer while still maintaining a uniform means of interaction. Consider the Operator Interface:
+The Operator, Scheme, and Kernel Layers interact heavily with each other. To formalize interaction between each layer, we introduce Layer Interfaces. A Layer Interface describes guaranteed member functions of objects in the Layer so that other Layers can safely use these member functions to interact. The Layer Interfaces allow for specialization of objects within each layer while still maintaining a uniform means of interaction. Consider the Operator Interface:
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
 struct Operator_Interface {
    // returns the operator evaluated on v at the given index
@@ -106,10 +107,12 @@ double operator() (int index);
 };
 \end{lstlisting}
 The Scheme Interface is very lightweight, as the update equations of optimization methods come in a variety of forms. All it requires is that a coordinate update can be produced and that used defined parameters can be passed to the object.
+{{\color{red} need to add requirements derived from synchronous driver to Scheme Interface}
+
 
 \subsection{Templating}
 
-In C++, when objects have similar structures that only vary based upon an input type, templates are used to reduce code redundancy.
+In C++, when objects have similar structures that only vary based upon an input type, templates are used to reduce code redundancy. For instance, the code for an object representing a dense matrix of doubles and the code for an object representing a dense matrix of floats is identical.
 Templates are not objects, but instead are blueprints for constructing an object.
 Based upon the arguments to the template, a corresponding type is automically constructed. see here *INSERT BRENT* for a primer on templates.
 We use templating heavily in our Toolbox, as most of our workflow can be genericized.
@@ -118,9 +121,9 @@ Objects in the Scheme Layer are implemented as templates.
 This is a natural choice, as object in the Scheme Layer map from optimization method's update to a specific optimization problem.
 For example, in code snippet \ref{fbs_l1_log_code} the scheme type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}.
 
-Objects in the Object Layer are also templatized. Depending on data representation, it can be more efficient to use functionality designed for that data representation. Consider the difference between computing $x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$ when $a_i$ are sparse instead of dense.
+Objects in the Object Layer are also templatized. Depending on data representation, it can be more efficient to use functionality designed for that data representation. Consider the difference between computing $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$ when $a_i$ are sparse instead of dense.
 Our linear algebra functions are overloaded so the compiler will deduce the proper function to use in the template.
 
-Kernel functions are also templatized. This allows Kernel functions to take in as input arbitrary objects from the Scheme Layer. Any object that satisfies the Scheme interface can be passed to a Kernel function.
+Kernel functions are also templatized. This allows Kernel functions to take in as input arbitrary objects from the Scheme Layer. If we did not use templating, for each coordinate rule would need a function for every possible realization of gradient descent, proximal point method, etc.  Any object that satisfies the Scheme Interface can be passed to a Kernel function.
 
-Multicore Drivers are templatized. This allows them to pass arbitraty objects from the Scheme layer to the proper Kernel functions.
+Multicore Drivers are templatized for the same reason as Kernel functions are templated. If we did not use templating, we would need a Multicore Driver for every possible realization of gradient descent, proximal point method, etc. Any object that satisfies the Scheme Interface can be passed to a Mutlicore Driver.
