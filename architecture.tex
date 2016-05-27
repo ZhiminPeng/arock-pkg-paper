@@ -1,10 +1,12 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Architecture}
 
+
 Writing efficient code is is very different from writing an optimization algorithm.
 Our toolbox's architecture is designed to mimic how a scientist writes down an optimization algorithm.
 The toolbox achieves this by separating into the following layers: Numerical Linear Algebra, Operator, Scheme, Kernel, and Multicore Driver.
 Each layer represents a different mathematical component of a multicore optimization algorithm. 
+
 
 The following is a brief description of each layer and how it interacts with the layers above and below it.
 
@@ -12,6 +14,7 @@ The following is a brief description of each layer and how it interacts with the
 
 We use eigen, Sparse BLAS, and BLAS in our Toolbox.
 Directly using efficient numerical packages like BLAS can be intimidating due to complex function calls. We provide simplified function calls for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
+
 
 If our provided functions are not sufficient, documentation for eigen, Sparse BLAS, and BLAS can be found in the following locations.
 
@@ -41,9 +44,6 @@ We provide implemenations of the following schemes:  Proximal Point Method,  Gra
 
 If the provided schemes are not sufficient, the user may implement their own scheme.
 The user is encouraged to use objects from the Operator Layer as building blocks, but direct implementaiton using the Linear Algebra Layer is perfectly functional. Their are certain rules about implementing schemes that must be followed. see section
-
-
-
 
 \subsection{Kernel}
 
@@ -77,20 +77,22 @@ Most users can treat this layer as a black box. Only a new way to generate threa
 \section{Implementation Details}
 
 \subsection{Interaction between Layers}
+>>>>>>> master
 
 The Operator, Scheme, and Kernel Layers interact heavily with each other. To formalize interaction between each layer, we introduce Layer Interfaces. A Layer Interface describes guaranteed member functions of objects in the Layer so that other Layers can safely use these member functions to interact. The Layer Interfaces allow for specialization of objects within each layer while still maintaining a uniform means of interaction. Consider the Operator Interface:
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
 struct Operator_Interface {
+
    // returns the operator evaluated on v at the given index
    double operator() (Vector* v, int index);
   // returns the operator evaluated on val at the given index
    double operator() (double val, int index);
   //applies full operator to v_in and write it to v_out
-   void operator() (Vector* v_in, Vector* v_out);
+  void operator() (Vector* v_in, Vector* v_out);
   //optional: see CFU paper
   void update_cache_vars (double old_x_i, double new_x_i, int index);
   // update the step size
-   void update_step_size (double step_size_) ;
+  void update_step_size (double step_size_) ;
  };
 \end{lstlisting}
 

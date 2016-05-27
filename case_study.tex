@@ -1,65 +1,64 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Case Study}\label{sec:quick_start}
-To illustrate the  usage of \pkg, consider the $\ell_1$ regularized logistic regression
+To illustrate the  usage of \pkg, consider the $\ell_1$ regularized logistic regression~\citep{ng2004feature}
 \begin{equation}\label{eq:l1_log}
 \Min_{x \in \RR^n} \lambda \|x\|_1 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right),
 \end{equation}
-where $\{(a_i, b_i)\}_{i = 1}^m$ is the training dataset. We set the regularization parameter
-$\lambda$ to 1, and the maximum number of epochs to 100. The following are the commands to train the model
+where $\{(a_i, b_i)\}_{i = 1}^m$ is the training dataset. For demonstration purposes, we simply set the regularization parameter
+$\lambda$ to 1, and the maximum number of epochs to 100, and use \pkg~to solve~\eqref{eq:l1_log} on a machine with 64GB of memory and two Intel Xeon E5-2690 v2 processors (20 cores in total). The following are the commands to train the model
 on the news20\footnote{ This dataset is from \url{http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets}.}
 dataset with 1 thread, 4 threads, and 16 threads respectively.
 \begin{lstlisting}[language=bash]
 # ------------------- running with 1 thread -----------------------#
-$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1. -nthread 1 
+$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 1 
 [some output skipped]
 Computing time  is: 29.53(s).
 # ------------------- running with 4 threads ----------------------#
-$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1. -nthread 4 
+$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 4 
 [some output skipped]
 Computing time  is: 11.01(s).
 # ------------------- running with 16 threads ---------------------#
-$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1. -nthread 16
+$ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 16
 [some output skipped]
 Computing time  is: 3.87(s).
 \end{lstlisting}
-where \texttt{-data, -epoch, -nthread, -lambda} are the flags for the data file, maximum number of epochs,
+The \texttt{-data, -epoch, -nthread, -lambda} are the flags for the data file, maximum number of epochs,
 total number of threads, and regularization parameter $\lambda$ respectively. We can see that the command-line
-tool is easy-to-use. Beyond the simplicity, \pkg~is also efficient in the sense that the training time is
-less than 30 seconds for a problem with more than 1 million variables. \pkg~is also scalable since
-using 16 threads can achieve approximately 8 times of speedup. Next, we show the major components of the source
-codes for building \texttt{arock\_fbs\_l1\_log}.
+tool is easy to use. Beyond the simplicity, \pkg~is also efficient in the sense that the training time is
+less than 30 seconds for a problem with more than 1 million variables. We can observe that using 16 threads can achieve approximately 8 times of speedup. Next, we show the major components of the source
+codes for building \texttt{motac\_fbs\_l1\_log}.
 
 We solve \eqref{eq:l1_log} with the forward-backward splitting scheme
 \begin{equation}\label{eq:fbs_l1_log}
-  x^{k+1} = \underbrace{\prox_{\lambda \eta \|\cdot\|_1}}_{\text{backward operator}}
-  (\underbrace{x^k - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x^k)}_{\text{forward operator}}),
+  x^{k+1} = \underbrace{\underbrace{\prox_{ \eta \lambda \|\cdot\|_1}}_{\text{backward operator}}
+  (\underbrace{x^k - \eta \, \nabla_{x} \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x^k)}_{\text{forward operator}})}_{\text{forward-backward splitting}},
 \end{equation}  
-where the gradient step of logistic loss and the proximal operator of $\ell_1$ norm correspond to the
-forward step and backward step respectively. Algorithm~\ref{alg:fbs_l1_log} shows the details of
+where the gradient step of logistic loss and the proximal of $\ell_1$ norm correspond to the
+forward operator and backward operator respectively. Algorithm~\ref{alg:fbs_l1_log} shows the details of
 implementing~\eqref{eq:fbs_l1_log} in an asynchronous parallel coordinate update fashion.
 
 \begin{algorithm}[H]\label{alg:fbs_l1_log}
+\DontPrintSemicolon
   \SetKwInOut{Input}{Input}\SetKwInOut{Output}{output}
-  \Input{$A, b$ and $x$ are shared variables, $K > 0$.}
+  \Input{$A, b$ and $x$ are shared variables, $p$ agents, $K > 0$.}
   \textbf{Initialization:} \\
-  \quad $\text{foward}(x) = x - \eta \, \nabla \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$ // forward operator \\
-  \quad $\text{backward}(x) = \prox_{\lambda \eta \|\cdot\|_1} (x)$ \hspace{32mm} // backward operator\\
-  \quad $\text{fbs}(x) = \text{backward}(\text{forward}(x))$  \hspace{29mm} // foward backward splitting \\
-  \While{each agent continuously}{
+  \quad $\text{foward}(x) := x - \eta \, \nabla_x \,\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x))$  \tcp*{forward operator}
+  \quad $\text{backward}(x) := \prox_{\eta \lambda  \|\cdot\|_1} (x)$ \tcp*{backward operator}
+  \quad $\text{fbs}(x) := \text{backward}(\text{forward}(x))$ \tcp*{foward-backward splitting scheme}
+  \While(\tcp*{this is the multicore driver\vspace{-5mm}}){each of the $p$ agents continuously}{
     \textbf{selects} $i \in \{1, ..., n\}$ based on some index rule \;
-    \textbf{updates} $x_i = x_i - \eta (I - \text{fbs})_i (x)$ .
+    \textbf{updates} $x_i \gets x_i - \eta \left(x_i - \text{fbs}_i (x)\right)$ 
   }
-  \caption{\pkg~sparse logistic regression.}
+  \caption{\pkg~for sparse logistic regression.}
 \end{algorithm}
-\commzp{Consider to write the next section as a mapping of the algorithm and the code.}
 The following snippet of code (extracted from 
-\texttt{apps/arock\_fbs\_l1\_log.cc}) implements Algorithm~\ref{alg:fbs_l1_log} with the \pkg~package. 
-Specifically, line 3 defines the \texttt{forward} object of type \texttt{forward\_grad\_for\_log\_loss<SpMat>} 
-initialized by the pointers to the data variable \texttt{A} and label variable \texttt{b}. Line 5  initialize a 
-\texttt{prox\_l1} object (\texttt{backward}) with regularization parameter $\lambda$ and step size $\eta$. 
-Line 7 define a forward backward splitting object (\texttt{fbs}) with the previously defined forward and 
-backward operators together with the address of the unknown variable \texttt{x}. Line 9 calls the driver 
-\texttt{AROCK} on the \texttt{fbs} object and some user specified parameters (\texttt{params}). We can see
+\texttt{apps/motac\_fbs\_l1\_log.cc}) implements Algorithm~\ref{alg:fbs_l1_log} with the \pkg~package. 
+Specifically, line 3 defines a \texttt{forward} operator of type \texttt{forward\_grad\_for\_log\_loss<SpMat>} 
+initialized by the pointers to the data \texttt{A} and label \texttt{b}. Line 5  initializes a 
+\texttt{prox\_l1} operator (\texttt{backward}) with regularization parameter $\lambda$ and step size $\eta$. 
+Line 7 defines a forward-backward splitting scheme (\texttt{fbs}) with the previously defined forward operator, 
+backward operator and the address of the unknown variable \texttt{x}. Line 9 calls the driver 
+\texttt{MOTAC} on the \texttt{fbs} scheme and some user specified parameters (\texttt{params}). One can see
 that creating an async-parallel solver can be easily achieved through assembling appropriate operators together.  
 \begin{lstlisting}[language=C++]
   // [...] parameters are defined above
@@ -67,16 +66,28 @@ that creating an async-parallel solver can be easily achieved through assembling
   forward_grad_for_log_loss<SpMat> forward(&A, &b, &Atx, eta);
   // backward operator: proximal operator for l1 norm 
   prox_l1 backward(eta, lambda);
-  // forward backward splitting scheme
+  // forward-backward splitting scheme
   ForwardBackwardSplitting<forward_grad_for_log_loss<SpMat>, prox_l1>
     fbs(&x, forward, backward);  
-  // the driver
+  // the multicore driver
   MOTAC(fbs, params);  
 \end{lstlisting}
-One can easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
+One can also easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
 the following two lines
 \begin{lstlisting}[language=C++]
   prox_sum_square backward(eta, lambda);
   ForwardBackwardSplitting<forward_grad_for_log_loss<SpMat>, prox_sum_square> fbs(&x, forward, backward);    
 \end{lstlisting}
-solves the Tikhonov regularized logistic regression. Similar substitutions will result in a solve for the Lasso problem.
+solves the Tikhonov regularized logistic regression, i.e., 
+$$\Min_{x \in \RR^n} \lambda \|x\|_2^2 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right).$$
+Replacing line 3 and line 7 with
+the following two lines
+\begin{lstlisting}[language=C++]
+  forward_grad_for_square_loss<SpMat> forward(&A, &b, &Atx, eta);
+  ForwardBackwardSplitting<forward_grad_for_square_loss<SpMat>, prox_l1> fbs(&x, forward, backward);    
+\end{lstlisting}
+solves the Lasso problem
+$$\Min_{x \in \RR^n} \lambda \|x\|_1 + \frac{1}{2}\|A x - b\|^2.$$
+It is worth mentioning that the previously used operators are implemented in \pkg. Users can refer to the documentation for
+the complete list of implemented operators. 
+
