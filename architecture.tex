@@ -32,49 +32,44 @@ In the case that an operator is needed that we have not provided, a user can use
 
 
 \subsection{Scheme}
-A scheme is a rule of making a single-iteration update to $x$. It is an optimization method such as coordinate update.
-
-Objects in the Scheme Layer are designed to mimic the process of mapping an optimization method to an optimization problem.
-An optimization method is mapped to a optimization problem by specifying the operators in the optimization method's update equation.
-For example, \eqref{eq:fbs_l1_log} is Forward Backward Splitting (also referred as Proximal Gradient Method) mapped to a specific problem, sparse logistic regression.
-Forward Backward Splitting is mapped to sparse logistic regression by specifying Forward and Backward Operators in its update equation.
-Each object in the Scheme layer contains an optimization method's update equation.
-A Scheme's update equation is specialized to a problem by specifying Operators. We can see this in code snippet above {\color{red} Need a way to reference the code snippet, can we embed it in a figure?}.
+A scheme describes how to make a single-iteration update to $x$.
+It can be written as a combination of operators. For example, \eqref{eq:fbs_l1_log} is the Forward-Backward Splitting Scheme (also referred as Proximal Gradient Method) for a specific problem, sparse logistic regression. In Algorithm \ref{alg:fbs_l1_log}, it corresponds to Line 9. To apply the Forward-Backward Splitting Scheme to the sparse logistic regression problem \eqref{}, we need to specify a Forward Operator and a Backward Operator (e.g., on Line 5 of Algorithm \ref{alg:fbs_l1_log}). We can see this in code snippet above {\color{red} Need a way to reference the code snippet, can we embed it in a figure?}.
 The scheme object \texttt{fbs} is specialized to sparse logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
 
-We provide implemenations of the following schemes:  Proximal Point Method,  Gradient Descent, Forward Backward Splitting, Backward Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
+We provide implemenations of the following schemes:  Proximal-Point Method,  Gradient Descent, Forward-Backward Splitting, Backward-Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
 
-If the provided schemes are not sufficient, the user may implement their own scheme.
-The user is encouraged to use objects from the Operator Layer as building blocks, but direct implementaiton using the Linear Algebra Layer is perfectly functional. Their are certain rules about implementing schemes that must be followed. see section
+If the provided schemes are not sufficient, the user may implement their own scheme following certain rules so that their scheme can interact with the rest of the package; see Section \ref{sc:implement}.
+The user is encouraged to use objects from the Operator Layer as building blocks, but direct calling the Linear Algebra Layer is perfectly functional. %Their are certain rules about implementing schemes that must be followed; see Section \ref{sc:implement}.
 
 \subsection{Kernel}
+A Kernel is a function that an agent executes.
+%Agents, in our Toolbox, are realized as threads.
+%C++11 threads are created from functions.
+%The Kernel Layer contains the functions used to create agents.
 
-Agents, in our Toolbox, are realized as threads.
-C++11 threads are created from functions.
-The Kernel Layer contains the functions used to create agents.
+As can be seen in Algorithm \ref{alg:fbs_l1_log}, an agent contains a coordinate choice rule and a scheme object.
+The agent chooses a coordinate using its rule and call the Scheme object with the chosen coordinate to update $x$.
+For each coordinate choice rule, we have implemented a corresponding Kernel function.
 
-As can be seen in algorithm \ref{alg:fbs_l1_log}, an agent contains a scheme object and a coordinate choice rule.
-The agent chooses a coordinate using its rule and the Scheme object uses the coordinate to produce an update.
-For each coordinate choice rule, we have implemented a corresponding function.
-
-We provide the following coordinate choice rules: cyclic, block cyclic, and randomized block.
-If the user desires a different coordinate rule, they may implement their own function.
+We provide the following coordinate choice rules: cyclic, random, and parallel Gauss-Seidel. The cyclic rule picks $i=(i_\mathrm{last} \mod n)+1$. \commwy{explain the rules.}
+%block cyclic, and randomized block.
+If the user desires a different coordinate rule, they may implement their own Kernel function, following the specifications in Section \ref{sc:implement}.
 
 
-\subsection{Multicore Drivers}
+\subsection{Multicore driver}
 
-Consider algorithm \ref{alg:fbs_l1_log}.
-Once a scheme has been specified, agents are responsible for carrying out the execution of the algorithm.
-However, agents must be created.
-The Multicore Driver layer is responsible for creating and managing agents.
-For example, if the user chooses the randomized block coordinate rule and ten threads, the Multicore Driver will create ten threads using the user's specified scheme and the function in the Kernel layer corresponding to the randomized block coordinate rule. Decisions such as coordinate rule, iterations, and stepsize are passed to the Multicore Driver through a Params object.
+%Consider algorithm \ref{alg:fbs_l1_log}.
+Once the schemes and kernels have been specified, agents are responsible for carrying them out. Agents are realized as C++11 threads.
+%However, agents must be created.
+A Multicore Driver creates and manages such agents.
+For example, if the user chooses the randomized block coordinate Kernel and ten agents, the Multicore Driver will create ten agents using that kernel. % using the user's specified scheme and the function in the Kernel layer corresponding to the randomized block coordinate rule.
+The Multicore Driver is called with a Params object that contains parameters such as kernel choice, number of iterations, and step size.
 An example of this is found in code snippet, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver.
 
-Optionally, a Multicore Driver can launch a controller agent to control the computing agents.
-A controller agent controls the worker agents by choosing stepsizes to accelerate convergence.
-The current controller agent monitors convergence by maintaining an approximate fixed point residual.
+Optionally, a Multicore Driver can launch a controller agent to control the other agents, for example, by choosing step sizes to accelerate convergence.
+The current controller agent monitors convergence by periodically computing the fixed point residual.
 
-Most users can treat this layer as a black box. Only a new way to generate threads is desired, does the user need to make modifications to the code of this layer.
+Most users can treat this layer as a black box. Only when a new way to generate agents is desired, does the user need to modify this layer.
 
 \section{Implementation Details}\label{sc:implement}
 
@@ -84,13 +79,13 @@ The Operator, Scheme, and Kernel Layers interact heavily with each other. To for
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
 struct Operator_Interface {
 
-   // returns the operator evaluated on v at the given index
-   double operator() (Vector* v, int index);
+  // returns the operator evaluated on v at the given index
+  double operator() (Vector* v, int index);
   // returns the operator evaluated on val at the given index
-   double operator() (double val, int index);
-  //applies full operator to v_in and write it to v_out
+  double operator() (double val, int index);
+  // applies full operator to v_in and write it to v_out
   void operator() (Vector* v_in, Vector* v_out);
-  //optional: see CFU paper
+  // optional: see CFU paper
   void update_cache_vars (double old_x_i, double new_x_i, int index);
   // update the step size
   void update_step_size (double step_size_) ;
@@ -103,10 +98,10 @@ Attempting to use an object as an Operator that does not have the functionality 
 The Scheme Interface:
 \begin{lstlisting}[language=C++]
 struct Scheme_Interface {
-//update internal params
-void update_params(Params* params);
-//produce coordinate update associated with index
-double operator() (int index);
+  // update internal params
+  void update_params(Params* params);
+  // produce coordinate update associated with index
+  double operator() (int index);
 };
 \end{lstlisting}
 The Scheme Interface is very lightweight, as the update equations of optimization methods come in a variety of forms. All it requires is that a coordinate update can be produced and that used defined parameters can be passed to the object.
@@ -130,3 +125,6 @@ Our linear algebra functions are overloaded so the compiler will deduce the prop
 Kernel functions are also templatized. This allows Kernel functions to take in as input arbitrary objects from the Scheme Layer. If we did not use templating, for each coordinate rule would need a function for every possible realization of gradient descent, proximal point method, etc.  Any object that satisfies the Scheme Interface can be passed to a Kernel function.
 
 Multicore Drivers are templatized for the same reason as Kernel functions are templated. If we did not use templating, we would need a Multicore Driver for every possible realization of gradient descent, proximal point method, etc. Any object that satisfies the Scheme Interface can be passed to a Mutlicore Driver.
+
+\subsection{How to write a kernel}
+....

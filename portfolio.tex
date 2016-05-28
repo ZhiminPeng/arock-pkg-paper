@@ -10,8 +10,8 @@ Assume that we have one unit of capital and $m$ assets to invest on. The $i$th a
 \text{subject to}~ x\ge0, \sum_{i=1}^m x_i\le 1,\, \sum_{i=1}^m\xi_i x_i\ge c,
 \end{array}
 \end{equation*}
-where the objective function is a measure of risk, and the last constraint imposes that the expected return is at least $c$. We apply the coordinate update scheme as shown in Section 5.3.1 of~\citep{PengWuXuYanYin2016_coordinate} to solve it. 
-We tested two synthetic  problem instances: one has 5,000 assets and the other instance has 30,000 assets. 
+where the objective function is a measure of risk, and the last constraint imposes that the expected return is at least $c$. We apply the coordinate update scheme as shown in Section 5.3.1 of~\citep{PengWuXuYanYin2016_coordinate} to solve it.
+We tested two synthetic  problem instances: one has 5,000 assets and the other instance has 30,000 assets.
 The vector of expected return rate was sampled from $N(0.01, 1)$ normal distribution.
 The matrix $Q$ was set to $\frac{1}{2} (R + R^T) + \sigma \cdot I$, where the entries of $R$ was sampled independently from $N(0, 0.1)$ normal distribution, and $\sigma$ was chosen such that $Q$ was positive definite.
 We tested both sync-parallel and async-parallel methods with 100 epochs. They reached similar final objective. We report the timing and speedup results in Table~\ref{tab:port_opt}. One can observe that  MOTAC scales well for both sync-parallel method and async-parallel method. The nice scaling performance of sync-parallel method is due to almost perfect load balancing across the threads and the homogeneous computing environment.
@@ -23,15 +23,15 @@ We tested both sync-parallel and async-parallel methods with 100 epochs. They re
 \midrule
  & & time (s) & speedup & time (s) & speedup \\
  \midrule
- \multirow{3}{*}{5K assets} & 1 thread & 13.95& 1.00 & 13.98& 1.00 \\
+ \multirow{3}{*}{5K assets} & 1 thread~ & 13.95& 1.00 & 13.98& 1.00 \\
   & 4 threads & 3.53& 3.95 &3.54 & 3.95\\
  & 16 threads & 0.99 &14.09 &0.92 & 15.19\\
-\midrule 
- \multirow{3}{*}{30K assets} & 1 thread & 483.20& 1.00& 479.22& 1.00 \\
+\midrule
+ \multirow{3}{*}{30K assets} & 1 thread~ & 483.20& 1.00& 479.22& 1.00 \\
   & 4 threads & 124.94& 3.86 &123.74 & 3.87\\
- & 16 threads & 31.96 &15.12 &33.11 & 14.47\\ 
+ & 16 threads & 31.96 &15.12 &33.11 & 14.47\\
 \bottomrule
 \end{tabular}
- \caption{\label{tab:port_opt}Results for portfolio optimization. }                  
+ \caption{\label{tab:port_opt}Results for portfolio optimization. }
 \end{table}
 
