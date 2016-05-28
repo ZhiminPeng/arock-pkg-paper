@@ -2,35 +2,37 @@
 \section{Architecture}
 
 
-Writing efficient code is is very different from writing an optimization algorithm.
+Writing efficient code is very different from writing an optimization algorithm.
 Our toolbox's architecture is designed to mimic how a scientist writes down an optimization algorithm.
 The toolbox achieves this by separating into the following layers: Numerical Linear Algebra, Operator, Scheme, Kernel, and Multicore Driver.
-Each layer represents a different mathematical component of a multicore optimization algorithm. 
+Each layer represents a different mathematical component of a parallel optimization algorithm.
 
 
-The following is a brief description of each layer and how it interacts with the layers above and below it.
+The following is a brief description of each layer and how it interacts with the layers above and below it. \commzp{add the picture here}
 
 \subsection{Numerical Linear Algebra}
 
-We use eigen, Sparse BLAS, and BLAS in our Toolbox.
+We use Eigen, Sparse BLAS, and BLAS in our Toolbox. \commzp{add reference}
 Directly using efficient numerical packages like BLAS can be intimidating due to complex function calls. We provide simplified function calls for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
 
 
-If our provided functions are not sufficient, documentation for eigen, Sparse BLAS, and BLAS can be found in the following locations.
+If our provided functions are not sufficient, documentation for eigen, Sparse BLAS, and BLAS can be found in the following locations. \commzp{documentation for these packages}
 
 \subsection{Operator}
 
-The Operator Layer contains Forward Operator objects (gradient steps) and Backward Operator (proximal mappings) objects. These operators types see heavy reuse throughtout optimization.
+The Operator Layer contains Forward Operator objects (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
 For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
 
-Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. The Operator Layer, as a result, allows users to reason and code at the level of operators. The higher layers uses Operator objects as components in the creation of algorithms.
+Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. \commwy{link back to code snippet, motivate readability, reusability, and fast coding} The Operator Layer, as a result, allows users to reason and code at the level of operators. The higher layers uses Operator objects as components in the creation of algorithms. \commzp{add footnote to explain the
+differences between operator object and operator}
 
-As our Toolbox is designed for coordinate update methods, each operator is implemented to compute coordinates efficiently. A coordinate or block of coordinates can be computed efficienty if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (e.g. $(Ax)_i$ versus $Ax$). In some cases caching, the storing an intermediate computation, can improve the efficiency of a coordinate block (e.g. $(A^TAx)_i$ versus $(A^Ty)_i$ where $y=Ax$). These ideas are formalized in CFU paper.  
+As our Toolbox is designed for coordinate update methods, each operator is implemented to compute coordinates efficiently. A coordinate or block of coordinates can be computed efficienty if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (e.g. $(Ax)_i$ versus $Ax$). In some cases caching --- the storing an intermediate computation --- can improve the efficiency of updating a coordinate block. These ideas are formalized in CFU paper.
 
-In the case that an operator is needed that we have not implemented, a user can use CFU paper as a guide to  implementing their own operator. In addition, there are certain rules about operator implementation that must be followed. see section
- 
+In the case that an operator is needed that we have not provided, a user can use CFU paper as a guide to identify coordinate-friendly structures and implement their own operator. In addition, there are certain rules about operator implementation that must be followed; see Section \ref{sc:implement}.
+
 
 \subsection{Scheme}
+A scheme is a rule of making a single-iteration update to $x$. It is an optimization method such as coordinate update.
 
 Objects in the Scheme Layer are designed to mimic the process of mapping an optimization method to an optimization problem.
 An optimization method is mapped to a optimization problem by specifying the operators in the optimization method's update equation.
@@ -39,7 +41,7 @@ Forward Backward Splitting is mapped to sparse logistic regression by specifying
 Each object in the Scheme layer contains an optimization method's update equation.
 A Scheme's update equation is specialized to a problem by specifying Operators. We can see this in code snippet above {\color{red} Need a way to reference the code snippet, can we embed it in a figure?}.
 The scheme object \texttt{fbs} is specialized to sparse logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
-  
+
 We provide implemenations of the following schemes:  Proximal Point Method,  Gradient Descent, Forward Backward Splitting, Backward Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
 
 If the provided schemes are not sufficient, the user may implement their own scheme.
@@ -47,26 +49,26 @@ The user is encouraged to use objects from the Operator Layer as building blocks
 
 \subsection{Kernel}
 
-Agents, in our Toolbox, are realized as threads. 
+Agents, in our Toolbox, are realized as threads.
 C++11 threads are created from functions.
-The Kernel Layer contains the functions used to create agents. 
+The Kernel Layer contains the functions used to create agents.
 
 As can be seen in algorithm \ref{alg:fbs_l1_log}, an agent contains a scheme object and a coordinate choice rule.
 The agent chooses a coordinate using its rule and the Scheme object uses the coordinate to produce an update.
 For each coordinate choice rule, we have implemented a corresponding function.
 
-We provide the following coordinate choice rules: cyclic, block cyclic, and randomized block. 
+We provide the following coordinate choice rules: cyclic, block cyclic, and randomized block.
 If the user desires a different coordinate rule, they may implement their own function.
- 
+
 
 \subsection{Multicore Drivers}
 
 Consider algorithm \ref{alg:fbs_l1_log}.
 Once a scheme has been specified, agents are responsible for carrying out the execution of the algorithm.
 However, agents must be created.
-The Multicore Driver layer is responsible for creating and managing agents. 
+The Multicore Driver layer is responsible for creating and managing agents.
 For example, if the user chooses the randomized block coordinate rule and ten threads, the Multicore Driver will create ten threads using the user's specified scheme and the function in the Kernel layer corresponding to the randomized block coordinate rule. Decisions such as coordinate rule, iterations, and stepsize are passed to the Multicore Driver through a Params object.
-An example of this is found in code snippet, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver. 
+An example of this is found in code snippet, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver.
 
 Optionally, a Multicore Driver can launch a controller agent to control the computing agents.
 A controller agent controls the worker agents by choosing stepsizes to accelerate convergence.
@@ -74,10 +76,9 @@ The current controller agent monitors convergence by maintaining an approximate 
 
 Most users can treat this layer as a black box. Only a new way to generate threads is desired, does the user need to make modifications to the code of this layer.
 
-\section{Implementation Details}
+\section{Implementation Details}\label{sc:implement}
 
 \subsection{Interaction between Layers}
->>>>>>> master
 
 The Operator, Scheme, and Kernel Layers interact heavily with each other. To formalize interaction between each layer, we introduce Layer Interfaces. A Layer Interface describes guaranteed member functions of objects in the Layer so that other Layers can safely use these member functions to interact. The Layer Interfaces allow for specialization of objects within each layer while still maintaining a uniform means of interaction. Consider the Operator Interface:
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
