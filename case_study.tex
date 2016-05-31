@@ -21,7 +21,7 @@ $ arock_fbs_l1_log -data news20.svm -epoch 100 -lambda 1 -nthread 16
 [some output skipped]
 Computing time  is: 3.87(s).
 \end{lstlisting}
-The \texttt{-data, -epoch, -nthread, -lambda} are the flags \commwy{fix} for the data file, maximum number of epochs,
+The flags \texttt{-data, -epoch, -nthread, -lambda} are followed by command-line arguments for the data file, maximum number of epochs,
 total number of threads, and regularization parameter $\lambda$ respectively. We can see that the command-line
 tool is easy to use. Beyond the simplicity, \pkg~is also efficient in the sense that the training time is
 less than 30 seconds for a problem with more than 1 million variables. We can observe that using 16 threads can achieve approximately 8 times of speedup. Next, we show the major components of the source
@@ -55,12 +55,11 @@ implementing~\eqref{eq:fbs_l1_log} in an asynchronous parallel coordinate update
 The snippet of code (extracted from
 \texttt{apps/motac\_fbs\_l1\_log.cc}) implements Algorithm~\ref{alg:fbs_l1_log} with the \pkg~package.
 Specifically, line 3 defines \texttt{forward} as an operator of type \texttt{forward\_grad\_for\_log\_loss<SpMat>}
-initialized by the pointers to the data \texttt{A} and label \texttt{b}. Line 5  initializes a
-\texttt{prox\_l1} operator (\texttt{backward}) with regularization parameter $\lambda$ and step size $\eta$. \commzp{use consistent language}
+initialized by the pointers to the data \texttt{A} and label \texttt{b}. Line 5  defines a
+\texttt{prox\_l1} operator (\texttt{backward}) initialized by $\lambda$ and step size $\eta$.
 Line 7 defines a forward-backward splitting scheme (\texttt{fbs}) with the previously defined forward operator,
-backward operator and the address of the unknown variable \texttt{x}. Line 9 calls the driver
-\texttt{MOTAC} on the \texttt{fbs} scheme and some user specified parameters (\texttt{params}). One can see
-that creating an async-parallel solver can be easily achieved through assembling appropriate operators together.
+backward operator and the address of the unknown variable \texttt{x}. Line 9 calls the multicore driver
+\texttt{MOTAC} on the \texttt{fbs} scheme and some user specified parameters (\texttt{params}).
 \begin{lstlisting}[caption={example code}\label{code:l1log},language=C++]
   // [...] parameters are defined above
   // forward operator: gradient step for logistic loss
@@ -73,7 +72,7 @@ that creating an async-parallel solver can be easily achieved through assembling
   // the multicore driver
   MOTAC(fbs, params);
 \end{lstlisting}
-One can also easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
+One can easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
 the following two lines
 \begin{lstlisting}[language=C++]
   prox_sum_square backward(eta, lambda);
@@ -89,6 +88,6 @@ the following two lines
 \end{lstlisting}
 solves the Lasso problem
 $$\Min_{x \in \RR^n} \lambda \|x\|_1 + \frac{1}{2}\|A x - b\|^2.$$
-It is worth mentioning that the previously used operators are implemented in \pkg. Users can refer to the documentation for
+It is worth mentioning that the previously used operators have implemented in \pkg. Users can refer to the documentation for
 the complete list of implemented operators.
 
