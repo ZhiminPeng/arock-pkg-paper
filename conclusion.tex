@@ -1,2 +1,52 @@
 % !TEX root = ./arock_pkg_main.tex
-\section{Conclusion}
+\section{Future Work}
+
+\pkg~ is still in development, and there are a variety of directions we plan to take the toolbox.
+
+\subsection{Stochastic methods} 
+
+Stochastic algorithms exploit summative structures in problems to produce cheap updates. Our current Toolbox does not currently support Stochastic algorithms, but can be modified to do so. Such a modification would require stochastic operators. A developement branch will appear shortly on our github after we release this paper.  
+
+\subsection{Cluster computing}
+ 
+ Currently, agents are realized as threads.
+ This limits our toolbox to the single machine regime.
+ Future releases intende to use MPI to bring \pkg~ to cluster computing. The new functionality will be provided in the Driver and the Kernel Layer. 
+
+\subsection{User interface}
+ \pkg~ requires the user to either use our prepackaged executables, or code moderately in C++.
+ A graphic user interace is in development for those who wish to use only built-in operators and schemes.
+ In addition, interfaces to Matlab and Python will be provided for algorithms of particular interest.
+ 
+\subsection{Automatic parameter choice}
+\pkg~ requires the user to choose stepsizes, and number of threads.
+In future releases we intend to provide automatic stepsize heuristics. 
+Optimizing thread number is a function of current processor usage and computing architecture. 
+We intend to provide functions to survey the current architecture and suggest proper level of parallelism and asynchrony.
+
+\subsection{Block coordinate update}
+  Currently \pkg~ does not support block coordinate updates. Block coordinate updates present a tradeoff between iteration complexity and communication efficiency.
+  Automatic block size deduction and block composition (the coordinates forming a block) is an open question.
+We plan to explore several heuristics.
+
+\subsection{New fields}
+
+Splitting methods have been used in many fields (see "Some Facts about Operator-Splitting and
+Alternating Direction Methods" for a more in depth discussion).
+Our current release focuses on optimization, but provides a strong foundation for branching into other fields.
+Fruitful fields to explore include:
+
+\begin{itemize}
+\item Time varying systems such as initial value problems and partial differential equations
+\item Numerical Simulations
+\item Large Scale Numerical Linear Algebra 
+\end{itemize}
+
+
+\section{Conclusion }
+We have developed \pkg, an easy-to-use open source toolbox for large scale optimization problems.
+The toolbox implemented both sequential and parallel algorithms based on operator splitting methods, stochastic methods,
+and coordinate update methods. The architecture of \pkg~is separated into several layers and mimics how a scientist writes down an optimization algorithm. Therefore, it is easy for one to obtain a new algorithm by modifying just one of the layers such as adding a new operator.
+
+
+\pkg~ is still being developed. New applications will be added to the package based upon new research and community input. The software and user guide \repo~ will be kept up-to-date and supported.
