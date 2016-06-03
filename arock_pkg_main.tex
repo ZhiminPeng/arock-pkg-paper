@@ -17,6 +17,8 @@
 \newcommand{\dataset}{{\cal D}}
 \newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
 \newcommand{\pkg}{{MOTAC}}
+\newcommand{\cpp}{{C++11}}
+\newcommand{\repo}{\url{https://github.com/uclaopt/MOTAC}}
 % Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
 
 \jmlrheading{1}{2016}{xx-xx}{x/xx}{xx/xx}{Brent Edmunds, Zhimin Peng and Wotao Yin}
@@ -46,11 +48,11 @@
 
 %% abstract
 \begin{abstract}
-We need an abstract
+MOTAC is a toolbox written in C++11 that implements algorithms based on a set of modern methods for large-scale optimization. It covers a variety of optimization problems, which can be both smooth and nonsmooth, convex and nonconvex, as well as constrained and unconstrained. The algorithms implemented in MOTAC, such as the coordinate update method and operator splitting method, are scalable as they decompose a problem into simple subproblems. These algorithms can run in a multi-threaded fashion, either synchronously or asynchronously, to take advantages of all the cores available. MOTAC is separated into several layers, and this architecture mimics how a scientist writes down an optimization algorithm. Therefore, it is easy for one to obtain a new algorithm by making simple modifications such as adding a new operator and adding a new splitting, while maintaining the multi-core parallelism and other features. The package is available at \repo.
 \end{abstract}
 
 \begin{keywords}
-Asynchronous Parallel, Operator Splitting, Optimization, Coordinate Update
+Asynchronous, Parallel, Operator Splitting, Optimization, Coordinate Update, Randomized Methods
 \end{keywords}
 
 
