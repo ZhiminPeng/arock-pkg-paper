@@ -4,7 +4,7 @@
 We consider the following Nonnegative Matrix Factorization problem
 
 \begin{equation*}
-	\Min_{X \geq 0,Y \geq 0} ~||A-X^T Y||_2^2,
+	\Min_{X \geq 0,Y \geq 0} ~\|A-X^T Y\|_2^2,
 \end{equation*}
 where $A \in \RR^{m\times n}$, $X \in \RR^{k \times m}$ and $Y \in \RR^{k \times m}$.
 This problem, despite being nonconvex has a special form.
@@ -34,7 +34,7 @@ The following results are the averages resulting from 20 runs.
 
 
 To show scalability we increased the dimension of $k$, and tested the speedup.
-\begin{table}[!hb]
+\begin{table}[!h]
 \centering
 \begin{tabular}{rrrr}
  \toprule

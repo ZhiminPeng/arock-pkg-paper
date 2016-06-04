@@ -216,8 +216,9 @@
 
 \def\@startauthor{\noindent \normalsize\bf}
 \def\@endauthor{}
-\def\@starteditor{\noindent \small {\bf Editor:~}}
-\def\@endeditor{\normalsize}
+% uncomment this for the JMLR format
+%\def\@starteditor{\noindent \small {\bf Editor:~}}
+%\def\@endeditor{\normalsize}
 \def\@maketitle{\vbox{\hsize\textwidth
  \linewidth\hsize \vskip \beforetitskip
  {\begin{center} \Large\bf \@title \par \end{center}} \vskip \aftertitskip
@@ -229,7 +230,8 @@
   \@startauthor \@author \@endauthor}
 
   \vskip \aftermaketitskip
-  \noindent \@starteditor \@editor \@endeditor
+  % uncomment this for the JMLR format
+  % \noindent \@starteditor \@editor \@endeditor
   \vskip \aftermaketitskip
 }}
 
@@ -249,9 +251,11 @@
 \def\firstpageno#1{\setcounter{page}{#1}}
 
 \def\jmlrheading#1#2#3#4#5#6{\def\ps@jmlrtps{\let\@mkboth\@gobbletwo%
-\def\@oddhead{\scriptsize Journal of Machine Learning Research #1 (#2) #3 \hfill Submitted #4; Published #5}%
-\def\@oddfoot{\scriptsize \copyright #2 #6. \hfill}%
-\def\@evenhead{}\def\@evenfoot{}}%
+% uncomment this for the JMLR format
+%\def\@oddhead{\scriptsize Journal of Machine Learning Research #1 (#2) #3 \hfill Submitted #4; Published #5}%
+% \def\@oddfoot{\scriptsize \copyright #2 #6. \hfill}%
+% \def\@evenhead{}\def\@evenfoot{}
+}%
 \thispagestyle{jmlrtps}}
 
 %% Defines the pagestyle for the rest of the pages
@@ -259,10 +263,12 @@
 %%        \ShortHeadings{short title}{short authors}
 
 \def\ShortHeadings#1#2{\def\ps@jmlrps{\let\@mkboth\@gobbletwo%
-\def\@oddhead{\hfill {\small\sc #1} \hfill}%
+%\def\@oddhead{\hfill {\small\sc #1} \hfill}%
 \def\@oddfoot{\hfill \small\rm \thepage \hfill}%
-\def\@evenhead{\hfill {\small\sc #2} \hfill}%
-\def\@evenfoot{\hfill \small\rm \thepage \hfill}}%
+%\def\@evenhead{\hfill {\small\sc #2} \hfill}%
+\def\@evenfoot{\hfill \small\rm \thepage \hfill}
+}
+%
 \pagestyle{jmlrps}}
 
 
