@@ -9,7 +9,7 @@ Specifically, \pkg~implements  algorithms based on  the following methods:
 \item \textbf{Coordinate update}: a collection of methods that find a solution $x$ by updating one, or a few, of its elements each time. The coordinates can be selected according to the random, cyclic, shuffled cyclic, and greedy rules.
 
 \item \textbf{Parallel} % numerical linear algebra procedures or 
-coordinate updates that can be either synchronous or asynchronous.
+coordinate updates (either synchronous or asynchronous).
 %\item  \textbf{Random} coordinate updates.
 \end{itemize}
 These methods are reviewed in Section~\ref{sec:review} below.
@@ -24,10 +24,10 @@ portfolio optimization;
 and nonnegative matrix factorization. \pkg~can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems. % to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
 
 \subsection{Coding and design}
-\pkg~leverages the \cpp~standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading that is invariant to operating system. \pkg~can be compiled by standard C++ compilers  under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and numerical linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ScaLAPACK\citep{blackford1997scalapack}.}  that correspond to different algorithmic components. \pkg~is used by composing objects from each layer.
+\pkg~leverages the \cpp~standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading that is invariant to operating system. \pkg~can be compiled by standard C++ compilers  under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and numerical linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ScaLAPACK\citep{blackford1997scalapack}.}  that correspond to different algorithmic components. \pkg~is used by combining objects from each layer.
 Therefore, our codes  are short, clean, and thus easy to read and modify.
 
-%We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The multicore drivers execute the coordinate update mappings. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
+%We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The  drivers execute the coordinate updates. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
 %The above functionalities are supported by our novel modular architecture.
 
 %of  multilevel approach which reduces the gap between expert to low-level programming and novice-level programming.
@@ -74,7 +74,10 @@ Epsilon \citep{wytock2015convex} is a package for solving general convex program
 Though these packages solve convex optimization problems from various applications, they are sequential and do not take advantage of
 the multicore systems.  
 PASSCoDe \citep{hsieh2015passcode} implements the muticore parallel dual coordinate descent method that solves $\ell_2$ regularized 
-empirical risk minimization problems.  
+empirical risk minimization problems.
+APPROX\citep{fercoq2015accelerated} implements  parallel coordinate descent, stochastic dual ascent, and accelerated gradient descent for block seperable objective functions.
+AC-DC\citep{richtarik2016parallel} contains a suite a serial, parallel, and distributed coordinate descent algorithms for LASSO, Elastic Net, SVM, and sparse SVM.
+
 %\subsection{Old}
 %Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
 %These methods handle both linear and nonlinear maps, smooth and nonsmooth functions, and convex and nonconvex problems.
