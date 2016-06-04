@@ -91,8 +91,8 @@ public:
 };
 \end{lstlisting}
 
-For an object to belong to the Operator layer, it must have these functions defined.
-Attempting to use an object as an Operator that does not have the functionality defined by the Operator Interface will result in compiler errors.
+For an object to belong to the Operator layer, it must inherit from the Operator Interface.
+Code that contains an object that inherits from the Operator Interface that does not implement the functions in the Operator Interface will not compile until the object properly implements the Object Interface.
 
 The Scheme Interface:
 \begin{lstlisting}[language=C++]
@@ -112,9 +112,12 @@ public:
   virtual void update_cache_vars(int rank, int num_threads) = 0;
 };
 \end{lstlisting}
+For an object to belong to the Scheme Layer, it must inherit from the Scheme Interface.
+Code that contains an object that inherits from the Scheme Interface that does not implement the functions in the Scheme Interface will not compile until the object properly implements the Scheme Interface.
+
 Schemes must be suitable for both asynchronous and synchronous computing. Synchronous computing requires all coordinate updates to be computed before applying the coordinate updates. Asynchronous computing can apply coordinates updates immediately. The Scheme Interface reflects these two computing regimes.
 
-The Scheme Interface is very lightweight, as the update equations of optimization methods come in a variety of forms.  All it requires is that a coordinate update can be produced and that used defined parameters can be passed to the object.
+The Scheme Interface is very lightweight, as the iterations of optimization methods come in a variety of forms.  All it requires is that a coordinate update can be produced and that parameters can be passed to the object.
 
  
 
