@@ -8,22 +8,20 @@ The toolbox achieves this by separating into the following layers: Numerical Lin
 Each layer represents a different mathematical component of a parallel optimization algorithm.
 
 
-The following is a brief description of each layer and how it interacts with the layers above and below it. \commzp{add the picture here}
+The following is a brief description of each layer and how it interacts with the layers above and below it. 
 
-\subsection{Numerical Linear Algebra}
+\subsection{Numerical linear algebra}
 
-We use Eigen, Sparse BLAS, and BLAS in our Toolbox. \commzp{add reference}
+We use Eigen~\citep{eigenweb}, Sparse BLAS\footnote{\url{http://math.nist.gov/spblas/}}, and BLAS\footnote{\url{http://www.netlib.org/blas/}} in our Toolbox.
 Directly using efficient numerical packages like BLAS can be intimidating due to complex function calls. We provide simplified function calls for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
-
-
-If our provided functions are not sufficient, documentation for eigen, Sparse BLAS, and BLAS can be found in the following locations. \commzp{documentation for these packages}
+If our provided functions are not sufficient, Eigen, Sparse BLAS, and BLAS are well documented. 
 
 \subsection{Operator}
 
-The Operator Layer contains Forward Operator objects\footnote{"Operator object" refers to a C++ object. An "operator" refers to the mathematical object } (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
+The Operator Layer contains Forward Operator objects\footnote{``Operator object'' refers to a C++ object. An ``operator'' refers to the mathematical object } (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
 For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
 
-Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. Abstracting operators into Operator objects is useful, as Operator objects provide clarity and modularity. consider the construction of  \texttt{forward} in code listing \ref{code:l1log}. At a glance, it is clear that we are using the gradient of logistic regression, the data is sparse, and we are using the Matrix \texttt{A} and Vector \texttt{b} to compute the gradient. Code listing \ref{code:tikhonovlog} demonstrates how Operator objects provide modularity. Perturbations to an algorithm such as a change of regularizer or a change of data fidelity term, can be handled by changing the corresponding operator type. The rest of the code structure is unchanged. The Operator Layer, as a result, allows users to reason and code at the level of operators. 
+Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. Abstracting operators into Operator objects is useful, as Operator objects provide clarity and modularity. consider the construction of  \texttt{forward} in code listing 1. At a glance, it is clear that we are using the gradient of logistic regression, the data is sparse, and we are using the Matrix \texttt{A} and Vector \texttt{b} to compute the gradient. Code listing 2 demonstrates how Operator objects provide modularity. Perturbations to an algorithm such as a change of regularizer or a change of data fidelity term, can be handled by changing the corresponding operator type. The rest of the code structure is unchanged. The Operator Layer, as a result, allows users to reason and code at the level of operators. 
 The higher layers uses Operator objects as components in the creation of algorithms.
  
 As our Toolbox is designed for coordinate update methods, each operator is implemented to compute coordinates efficiently.
@@ -53,9 +51,13 @@ As can be seen in Algorithm \ref{alg:fbs_l1_log}, an agent contains a coordinate
 The agent chooses a coordinate using its rule and call the Scheme object with the chosen coordinate to update $x$.
 For each coordinate choice rule, we have implemented a corresponding Kernel function.
 
-We provide the following coordinate choice rules: cyclic, random, and parallel Gauss-Seidel. The cyclic rule picks $i=(i_\mathrm{last} \mod n)+1$. \commwy{explain the rules.}
+We provide the following coordinate choice rules: cyclic, random, and parallel Gauss-Seidel. 
+Cyclic update rule divides coordinates into approximately equal-sized blocks, and each agent is assigned a block.
+Each agent chooses coordinate cyclicly within the block. 
+For random update rule, each agent randomly chooses a block, cyclicly chooses coordinate from the block and then repeat the process.
+For parallel Gauss-Seidel rule, each agent updates all of the coordinates in a Gauss-Seidel fashion. 
 %block cyclic, and randomized block.
-If the user desires a different coordinate rule, they may implement their own Kernel function, following the specifications in Section \ref{sc:implement}.
+If the user desires a different coordinate rule, they may implement their own Kernel function, following the specifications in Section~\ref{sc:implement}.
 
 
 \subsection{Multicore driver}
@@ -73,9 +75,9 @@ The current controller agent monitors convergence by periodically computing the 
 
 Most users can treat this layer as a black box. Only when a new way to generate agents is desired, does the user need to modify this layer.
 
-\section{Implementation Details}\label{sc:implement}
+\section{Implementation details}\label{sc:implement}
 
-\subsection{Interaction between Layers} \label{sc:interface}
+\subsection{Interaction between layers} \label{sc:interface}
 
 The Operator, Scheme, and Kernel Layers interact heavily with each other. To formalize interaction between each layer, we introduce Layer Interfaces. A Layer Interface describes guaranteed member functions of objects in the Layer so that other Layers can safely use these member functions to interact. The Layer Interfaces allow for specialization of objects within each layer while still maintaining a uniform means of interaction. Consider the Operator Interface:
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
@@ -122,7 +124,7 @@ We use templating heavily in our Toolbox, as most of our workflow can be generic
 
 Objects in the Scheme Layer are implemented as templates.
 This is a natural choice, as object in the Scheme Layer map from optimization method's update to a specific optimization problem.
-For example, in code snippet \ref{fbs_l1_log_code} the scheme type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}.
+For example, in code snippet \ref{code:l1log} the scheme type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}.
 
 Objects in the Object Layer are also templatized. Depending on data representation, it can be more efficient to use functionality designed for that data representation. Consider the difference between computing $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$ when $a_i$ are sparse instead of dense.
 Our linear algebra functions are overloaded so the compiler will deduce the proper function to use in the template.

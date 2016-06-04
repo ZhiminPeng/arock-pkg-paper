@@ -74,7 +74,7 @@ backward operator and the address of the unknown variable \texttt{x}. Line 9 cal
 \end{lstlisting}
 One can easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
 the following two lines
-\begin{lstlisting}[language=C++]
+\begin{lstlisting}[ caption={modified line 5-7}\label{code:tikhonovlog}, language=C++]
   prox_sum_square backward(eta, lambda);
   ForwardBackwardSplitting<forward_grad_for_log_loss<SpMat>, prox_sum_square> fbs(&x, forward, backward);
 \end{lstlisting}
@@ -82,7 +82,7 @@ solves the Tikhonov regularized logistic regression, i.e.,
 $$\Min_{x \in \RR^n} \lambda \|x\|_2^2 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right).$$
 Replacing line 3 and line 7 with
 the following two lines
-\begin{lstlisting}[language=C++]
+\begin{lstlisting}[caption={replaced line 3 and line 7}\label{code:tikhonovlog}, language=C++]
   forward_grad_for_square_loss<SpMat> forward(&A, &b, &Atx, eta);
   ForwardBackwardSplitting<forward_grad_for_square_loss<SpMat>, prox_l1> fbs(&x, forward, backward);
 \end{lstlisting}
