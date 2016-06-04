@@ -1,7 +1,7 @@
 % !TEX root = ./arock_pkg_main.tex
 \section{Future Work}
 
-New features are still being added to pkg. The following are some of the features we are exploring.
+New features are still being added to \pkg. The following are some of the features we are exploring.
 
 \subsection{Stochastic algorithms} 
 
@@ -11,22 +11,22 @@ Stochastic algorithms exploit summative structures in problems to produce cheap 
  
  Currently, agents are realized as threads.
  This limits our toolbox to the multicore regime.
- Future releases intend to use MPI to bring \pkg~ to cluster computing. The new functionality will be provided in the Driver and the Kernel Layer. 
+ Future releases intend to use MPI to bring \pkg~to cluster computing. The new functionality will be provided in the Driver and the Kernel Layer. 
 
 \subsection{User interface}
- \pkg~ requires the user to either use our prepackaged executables, or code moderately in C++.
+ \pkg~requires the user to either use our prepackaged executables, or code moderately in C++.
  A graphic user interace is in development for those who wish avoid interacting directly with C++.
  This will limit the user to built-in functionality.
  In addition, interfaces to Matlab and Python will be provided for algorithms of particular interest.
  
 \subsection{Automatic parameter choice}
-\pkg~ requires the user to choose stepsizes, and number of threads.
+\pkg~requires the user to choose stepsizes, and number of threads.
 In future releases we intend to provide automatic stepsize heuristics. 
 Optimizing thread number is a function of current processor usage and computing architecture. 
 We intend to provide functions to survey the current architecture and suggest proper levels of parallelism and asynchrony.
 
 \subsection{Block coordinate update}
-  Currently \pkg~ does not currently support block coordinate updates (updates consisting of a set of coordinates). Block coordinate updates present a tradeoff between iteration complexity and communication efficiency.
+  Currently \pkg~does not currently support block coordinate updates (updates consisting of a set of coordinates). Block coordinate updates present a tradeoff between iteration complexity and communication efficiency.
   Automatic block size deduction and block composition (the coordinates forming a block) is an open question.
 We plan to explore several heuristics.
 
