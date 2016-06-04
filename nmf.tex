@@ -9,7 +9,7 @@ We consider the following Nonnegative Matrix Factorization problem
 where $A \in \RR^{m\times n}$, $X \in \RR^{k \times m}$ and $Y \in \RR^{k \times m}$.
 This problem, despite being nonconvex has a special form.
 The objecctive function  is block multiconvex\footnote{the objective function is convex when all but a few specific variables are held fixed} and it's reguralizers are separable.
-Recent work by Davis (insert citation) has shown that this type of problem can be solved asynchronously.
+Recent work by \citep{2016APALM} has shown that this type of problem can be solved asynchronously.
 As the problem is nonconvex, convergence is given to a local minimizer, not a global minimizer.
 
 We run MOTAC on a synthetic problem, $A=\hat X^T \hat Y$ ,  with $m=1000$ and $k=20$.
