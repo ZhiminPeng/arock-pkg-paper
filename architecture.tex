@@ -4,7 +4,7 @@
 
 Writing efficient code is very different from writing an optimization algorithm.
 Our toolbox's architecture is designed to mimic how a scientist writes down an optimization algorithm.
-The toolbox achieves this by separating into the following layers: Numerical Linear Algebra, Operator, Scheme, Kernel, and Multicore Driver.
+The toolbox achieves this by separating into the following layers: Numerical Linear Algebra, Operator, Scheme, Kernel, and Driver.
 Each layer represents a different mathematical component of a parallel optimization algorithm.
 
 
@@ -42,30 +42,23 @@ If the provided schemes are not sufficient, the user may implement their own sch
 The user is encouraged to use objects from the Operator Layer as building blocks, but direct calling the Numerical Linear Algebra Layer is perfectly functional. %Their are certain rules about implementing schemes that must be followed; see Section \ref{sc:implement}.
 
 \subsection{Kernel}
-A Kernel is a function that an agent executes.
-%Agents, in our Toolbox, are realized as threads.
-%C++11 threads are created from functions.
-%The Kernel Layer contains the functions used to create agents.
-
+A Kernel function is a function that an agent executes.
 As can be seen in Algorithm \ref{alg:fbs_l1_log}, an agent contains a coordinate choice rule and a scheme object.
 The agent chooses a coordinate using its rule and call the Scheme object with the chosen coordinate to update $x$.
 For each coordinate choice rule, we have implemented a corresponding Kernel function.
 
 We provide the following coordinate choice rules: cyclic, random, and parallel Gauss-Seidel. 
 Cyclic update rule divides coordinates into approximately equal-sized blocks, and each agent is assigned a block.
-Each agent chooses coordinate cyclicly within the block. 
-For random update rule, each agent randomly chooses a block, cyclicly chooses coordinate from the block and then repeat the process.
+Each agent chooses coordinates cyclicly from within the block. 
+For random update rule, each agent randomly chooses a block, then chooses coordinates cyclicly from within that block.
 For parallel Gauss-Seidel rule, each agent updates all of the coordinates in a Gauss-Seidel fashion. 
-%block cyclic, and randomized block.
 If the user desires a different coordinate rule, they may implement their own Kernel function, following the specifications in Section~\ref{sc:implement}.
 
 
-\subsection{Multicore driver}
+\subsection{Driver}
 
-%Consider algorithm \ref{alg:fbs_l1_log}.
 Once the schemes and kernels have been specified, agents are responsible for carrying them out. Agents are realized as C++11 threads.
-%However, agents must be created.
-A Multicore Driver creates and manages such agents.
+A Driver creates and manages such agents.
 For example, if the user chooses the randomized block coordinate Kernel and ten agents, the Multicore Driver will create ten agents using that kernel. % using the user's specified scheme and the function in the Kernel layer corresponding to the randomized block coordinate rule.
 The Multicore Driver is called with a Params object that contains parameters such as kernel choice, number of iterations, and step size.
 An example of this is found in code snippet, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver.
@@ -81,19 +74,21 @@ Most users can treat this layer as a black box. Only when a new way to generate 
 
 The Operator, Scheme, and Kernel Layers interact heavily with each other. To formalize interaction between each layer, we introduce Layer Interfaces. A Layer Interface describes guaranteed member functions of objects in the Layer so that other Layers can safely use these member functions to interact. The Layer Interfaces allow for specialization of objects within each layer while still maintaining a uniform means of interaction. Consider the Operator Interface:
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
-struct Operator_Interface {
-
-  // returns the operator evaluated on v at the given index
-  double operator() (Vector* v, int index);
-  // returns the operator evaluated on val at the given index
-  double operator() (double val, int index);
-  // applies full operator to v_in and write it to v_out
-  void operator() (Vector* v_in, Vector* v_out);
-  // optional: see CFU paper
-  void update_cache_vars (double old_x_i, double new_x_i, int index);
-  // update the step size
-  void update_step_size (double step_size_) ;
- };
+class OperatorInterface {
+public:
+  //compute operator at index
+  virtual double operator() (Vector* v, int index = 0) =0;
+  //compute operator using val at index
+  virtual double operator() (double val, int index = 0) =0;
+  //compute full operator using v_in, storing in v_out
+  virtual void operator() (Vector* v_in, Vector* v_out) = 0;
+  // update operator related step sizes
+  virtual void update_step_size(double step_size_)  = 0;
+  // update cache variables
+  virtual void update_cache_vars(double old_x_i, double new_x_i, int index) = 0;
+  // update block of cache variables based upon rank of calling thread
+  void update_cache_vars(Vector* x, int rank, int num_threads) =0
+};
 \end{lstlisting}
 
 For an object to belong to the Operator layer, it must have these functions defined.
@@ -101,15 +96,28 @@ Attempting to use an object as an Operator that does not have the functionality 
 
 The Scheme Interface:
 \begin{lstlisting}[language=C++]
-struct Scheme_Interface {
-  // update internal params
-  void update_params(Params* params);
-  // produce coordinate update associated with index
-  double operator() (int index);
+class SchemeInterface {
+public:
+  //update scheme internal parameters
+  virtual void update_params(Params* params) = 0;
+  //Async: compute and apply coordinate update, return S_{index}
+  virtual double operator() (int index) = 0;
+  //Sync: compute and store S_{index} in S_i
+  virtual void operator() (int index, double& S_i) =0;
+  //Sync: apply block of  S stored in s to solution variable
+  virtual void update(Vector& s, int range_start, int num_cords) = 0;
+  //Sync: apply coordinate of S stored in s to solution variable
+  virtual void update(double s, int idx ) = 0;
+  //Sync: update rank worth of cache_vars based on num_threads
+  virtual void update_cache_vars(int rank, int num_threads) = 0;
 };
 \end{lstlisting}
-The Scheme Interface is very lightweight, as the update equations of optimization methods come in a variety of forms. All it requires is that a coordinate update can be produced and that used defined parameters can be passed to the object.
-{{\color{red} need to add requirements derived from synchronous driver to Scheme Interface}
+Schemes must be suitable for both asynchronous and synchronous computing. Synchronous computing requires all coordinate updates to be computed before applying the coordinate updates. Asynchronous computing can apply coordinates updates immediately. The Scheme Interface reflects these two computing regimes.
+
+The Scheme Interface is very lightweight, as the update equations of optimization methods come in a variety of forms.  All it requires is that a coordinate update can be produced and that used defined parameters can be passed to the object.
+
+ 
+
 
 \subsection{Kernel and Multicore Driver Interaction}
 
@@ -119,11 +127,11 @@ A Multicore Driver creates agents using Kernel functions. The arguments to a Mul
 
 In C++, when objects have similar structures that only vary based upon an input type, templates are used to reduce code redundancy. For instance, the code for an object representing a dense matrix of doubles and the code for an object representing a dense matrix of floats is identical.
 Templates are not objects, but instead are blueprints for constructing an object.
-Based upon the arguments to the template, a corresponding type is automically constructed. see here *INSERT BRENT* for a primer on templates.
+Based upon the arguments to the template, a corresponding type is automically constructed.
 We use templating heavily in our Toolbox, as most of our workflow can be genericized.
 
 Objects in the Scheme Layer are implemented as templates.
-This is a natural choice, as object in the Scheme Layer map from optimization method's update to a specific optimization problem.
+This is a natural choice, as the Scheme objects are generic iteration formulas.
 For example, in code snippet \ref{code:l1log} the scheme type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}.
 
 Objects in the Object Layer are also templatized. Depending on data representation, it can be more efficient to use functionality designed for that data representation. Consider the difference between computing $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$ when $a_i$ are sparse instead of dense.
