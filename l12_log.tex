@@ -1,12 +1,8 @@
 % !TEX root = ./arock_pkg_main.tex
 \subsection{Minimizing $\ell_1$ Logistic Regression}
-In this subsection, we apply \pkg~with FBS to the $\ell_1$ regularized logistic regression problem
-\begin{equation}\label{eqn:l12_log}
-\Min_{x \in \mathbb{R}^n} \lambda \|x\|_1 + \sum_{i=1}^N \log\big(1 + \exp(-b_i \cdot a_i^T x)\big),
-\end{equation}
-where $\{(a_i, b_i)\}_{i=1}^N$ is the set of sample-label pairs, $\lambda =0.001$, and $n$ and $N$ represent the numbers of features and samples, respectively. This test uses two libsvm datasets\footnote{\url{http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/}}: news20, and url.
+In this subsection, we apply \pkg~with FBS to the $\ell_1$ regularized logistic regression problem~\eqref{eq:l1_log}. We set $\lambda =0.001$, and tests TMAC on two LIBSVM datasets\footnote{\url{http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/}}: news20, and url.
 
-Figure \ref{fig:log_reg_obj} gives the running times of  the full update (sync-parallel) and ARock~ (async-parallel) implementations on the two datasets. Figure~\ref{fig:log_reg_speedup} is the speedup performance comparison of the two methods. We can observe that ARock achieves near-linear speedup, but sync-parallel scales poorly as we shall explain below. One can also see that ARock converges faster due to more relaxed forward operator step size selection. 
+Figure \ref{fig:log_reg_obj} gives the running times of  the sync-parallel and async-parallel implementations on the two datasets. Figure~\ref{fig:log_reg_speedup} is the speedup performance comparison of the two methods. We can observe that async-parallel achieves near-linear speedup, but sync-parallel scales poorly as we shall explain below. One can also see that async-parallel converges faster due to more relaxed forward operator step size selection.
 
 In the sync-parallel implementation,  all the running cores have to wait for the last core to finish an iteration, and therefore if a core has a large load, it slows down the iteration. Although every core is (randomly) assigned to roughly the same number of features at each iteration, their  $a_i$'s have very different numbers of nonzeros, and the core with the largest number of nonzeros is the slowest (Sparse matrix computation is used for both datasets, which are very large.) As more cores are used,  despite that they altogether do more work at each iteration, the per-iteration time reduces as the slowest core tends to be slower.
 
@@ -24,7 +20,6 @@ In the sync-parallel implementation,  all the running cores have to wait for the
         \end{subfigure} 
         \caption{Objective vs wall clock time.}\label{fig:log_reg_obj}
 \end{figure}
-
 \begin{figure}[!h]
         \centering
        \begin{subfigure}[b]{0.35\textwidth}

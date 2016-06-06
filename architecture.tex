@@ -4,7 +4,7 @@
 
 Writing efficient code is very different from writing an optimization algorithm.
 Our toolbox's architecture is designed to mimic how a scientist writes down an optimization algorithm.
-The toolbox achieves this by separating into the following layers: Numerical Linear Algebra, Operator, Scheme, Kernel, and Driver.
+The toolbox achieves this by separating into the following layers: Numerical linear algebra, Operator, Scheme, Kernel, and Driver.
 Each layer represents a different mathematical component of a parallel optimization algorithm.
 
 
@@ -13,27 +13,27 @@ The following is a brief description of each layer and how it interacts with the
 \subsection{Numerical linear algebra}
 
 We use Eigen~\citep{eigenweb}, Sparse BLAS\footnote{\url{http://math.nist.gov/spblas/}}, and BLAS\footnote{\url{http://www.netlib.org/blas/}} in our Toolbox.
-Directly using efficient numerical packages like BLAS can be intimidating due to complex function calls. We provide simplified function calls for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
+Directly using efficient numerical packages like BLAS can be intimidating due to complex function calls. We provide simplified function calls for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical linear algebra layer in their implementations.
 If our provided functions are not sufficient, Eigen, Sparse BLAS, and BLAS are well documented. 
 
 \subsection{Operator}
 
-The Operator Layer contains Forward Operator objects\footnote{``Operator object'' refers to a C++ object. An ``operator'' refers to the mathematical object } (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
-For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
+The Operator Layer contains Forward Operator objects\footnote{``Operator object'' refers to a C++ object. An ``operator'' refers to the mathematical object.} (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
+For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x}))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
 
 Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common Forward and Backward Operators into Operator objects. Abstracting operators into Operator objects is useful, as Operator objects provide clarity and modularity. consider the construction of  \texttt{forward} in code listing 1. At a glance, it is clear that we are using the gradient of logistic regression, the data is sparse, and we are using the Matrix \texttt{A} and Vector \texttt{b} to compute the gradient. Code listing 2 demonstrates how Operator objects provide modularity. Perturbations to an algorithm such as a change of regularizer or a change of data fidelity term, can be handled by changing the corresponding operator type. The rest of the code structure is unchanged. The Operator Layer, as a result, allows users to reason and code at the level of operators. 
 The higher layers uses Operator objects as components in the creation of algorithms.
  
 As our Toolbox is designed for coordinate update methods, each operator is implemented to compute coordinates efficiently.
  A coordinate or block of coordinates can be computed efficienty if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (e.g. $(Ax)_i$ versus $Ax$). 
- In some cases caching, the storing an intermediate computations, can improve the efficiency of updating a coordinate block. These ideas are formalized in CFU paper.
+ In some cases caching, the storing an intermediate computations, can improve the efficiency of updating a coordinate block. These ideas are formalized in~\citep{PengWuXuYanYin2016_coordinate}.
 
-In the case that an operator is needed that we have not provided, a user can use CFU paper as a guide to identify coordinate-friendly structures and implement their own operator. In addition, there are certain rules about operator implementation that must be followed; see Section \ref{sc:interface}.
+In the case that an operator is needed that we have not provided, a user can use~\citep{PengWuXuYanYin2016_coordinate} as a guide to identify coordinate-friendly structures and implement their own operator. In addition, there are certain rules about operator implementation that must be followed; see Section \ref{sc:interface}.
 
 
 \subsection{Scheme}
 A scheme describes how to make a single-iteration update to $x$.
-It can be written as a combination of operators. For example, \eqref{eq:fbs_l1_log} is the Forward-Backward Splitting Scheme (also referred as Proximal Gradient Method) for a specific problem, sparse logistic regression. In Algorithm \ref{alg:fbs_l1_log}, it corresponds to Line 9. To apply the Forward-Backward Splitting Scheme to the sparse logistic regression problem \ref{code:tikhonovlog} , we need to specify a Forward Operator and a Backward Operator (e.g., on Line 5 of Algorithm \ref{alg:fbs_l1_log}). We can see this in code snippet \ref{code:l1log} .
+It can be written as a combination of operators. For example, \eqref{eq:fbs_l1_log} is the Forward-Backward Splitting Scheme (also referred as Proximal Gradient Method) for a specific problem, sparse logistic regression. In Algorithm \ref{alg:fbs_l1_log}, it corresponds to Line 9. To apply the Forward-Backward Splitting Scheme to the sparse logistic regression problem \ref{code:tikhonovlog} , we need to specify a Forward Operator and a Backward Operator (e.g., on Line 5 of Algorithm \ref{alg:fbs_l1_log}). We can see this in code snippet listing 1.
 The scheme object \texttt{fbs} is specialized to sparse logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
 
 We provide implemenations of the following schemes:  Proximal-Point Method,  Gradient Descent, Forward-Backward Splitting, Backward-Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
@@ -61,7 +61,7 @@ Once the schemes and kernels have been specified, agents are responsible for car
 A Driver creates and manages such agents.
 For example, if the user chooses the randomized block coordinate Kernel and ten agents, the Multicore Driver will create ten agents using that kernel. % using the user's specified scheme and the function in the Kernel layer corresponding to the randomized block coordinate rule.
 The Multicore Driver is called with a Params object that contains parameters such as kernel choice, number of iterations, and step size.
-An example of this is found in code snippet, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver.
+An example of this is found in code snippet listing 1, where \texttt{fbs} and \texttt{params} are passed to the \texttt{MOTAC} driver.
 
 Optionally, a Multicore Driver can launch a controller agent to control the other agents, for example, by choosing step sizes to accelerate convergence.
 The current controller agent monitors convergence by periodically computing the fixed point residual.
@@ -76,18 +76,18 @@ The Operator, Scheme, and Kernel Layers interact heavily with each other. To for
 \begin{lstlisting}[language=C++,label={Operator_Interface}]
 class OperatorInterface {
 public:
-  //compute operator at index
-  virtual double operator() (Vector* v, int index = 0) =0;
-  //compute operator using val at index
-  virtual double operator() (double val, int index = 0) =0;
-  //compute full operator using v_in, storing in v_out
-  virtual void operator() (Vector* v_in, Vector* v_out) = 0;
+  // compute operator at index
+  virtual double operator() (Vector* v, int index = 0)=0;
+  // compute operator using val at index
+  virtual double operator() (double val, int index = 0)=0;
+  // compute full operator using v_in, storing in v_out
+  virtual void operator() (Vector* v_in, Vector* v_out)=0;
   // update operator related step sizes
-  virtual void update_step_size(double step_size_)  = 0;
+  virtual void update_step_size(double step_size_)=0;
   // update cache variables
-  virtual void update_cache_vars(double old_x_i, double new_x_i, int index) = 0;
+  virtual void update_cache_vars(double old_x_i, double new_x_i, int i)=0;
   // update block of cache variables based upon rank of calling thread
-  void update_cache_vars(Vector* x, int rank, int num_threads) =0
+  void update_cache_vars(Vector* x, int rank, int num_threads)=0;
 };
 \end{lstlisting}
 
@@ -98,18 +98,18 @@ The Scheme Interface:
 \begin{lstlisting}[language=C++]
 class SchemeInterface {
 public:
-  //update scheme internal parameters
-  virtual void update_params(Params* params) = 0;
-  //Async: compute and apply coordinate update, return S_{index}
-  virtual double operator() (int index) = 0;
-  //Sync: compute and store S_{index} in S_i
-  virtual void operator() (int index, double& S_i) =0;
-  //Sync: apply block of  S stored in s to solution variable
-  virtual void update(Vector& s, int range_start, int num_cords) = 0;
-  //Sync: apply coordinate of S stored in s to solution variable
-  virtual void update(double s, int idx ) = 0;
-  //Sync: update rank worth of cache_vars based on num_threads
-  virtual void update_cache_vars(int rank, int num_threads) = 0;
+  // update scheme internal parameters
+  virtual void update_params(Params* params)=0;
+  // async: compute and apply coordinate update, return S_{index}
+  virtual double operator() (int index)=0;
+  // sync: compute and store S_{index} in S_i
+  virtual void operator() (int index, double& S_i)=0;
+  // sync: apply block of  S stored in s to solution variable
+  virtual void update(Vector& s, int range_start, int num_cords)=0;
+  // sync: apply coordinate of S stored in s to solution variable
+  virtual void update(double s, int idx )=0;
+  // sync: update rank worth of cache_vars based on num_threads
+  virtual void update_cache_vars(int rank, int num_threads)=0;
 };
 \end{lstlisting}
 For an object to belong to the Scheme Layer, it must inherit from the Scheme Interface.
@@ -135,9 +135,9 @@ We use templating heavily in our Toolbox, as most of our workflow can be generic
 
 Objects in the Scheme Layer are implemented as templates.
 This is a natural choice, as the Scheme objects are generic iteration formulas.
-For example, in code snippet \ref{code:l1log} the scheme type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}.
+For example, in code snippet listing 1, the scheme type of \texttt{fbs} is defined by the arguments to the forward backward splitting template, \texttt{forward\_grad\_for\_log\_loss<SpMat>}, and \texttt{prox\_l1}.
 
-Objects in the Object Layer are also templatized. Depending on data representation, it can be more efficient to use functionality designed for that data representation. Consider the difference between computing $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + \exp(-b_i \cdot a_i^T x)))$ when $a_i$ are sparse instead of dense.
+Objects in the Object Layer are also templatized. Depending on data representation, it can be more efficient to use functionality designed for that data representation. Consider the difference between computing $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x}))$ when $a_i$ are sparse instead of dense.
 Our linear algebra functions are overloaded so the compiler will deduce the proper function to use in the template.
 
 Kernel functions are also templatized. This allows Kernel functions to take in as input arbitrary objects from the Scheme Layer. If we did not use templating, for each coordinate rule would need a function for every possible realization of gradient descent, proximal point method, etc.  Any object that satisfies the Scheme Interface can be passed to a Kernel function.
