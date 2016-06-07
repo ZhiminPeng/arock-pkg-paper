@@ -82,7 +82,7 @@ solves the Tikhonov regularized logistic regression, i.e.,
 $$\Min_{x \in \RR^n} \lambda \|x\|_2^2 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right).$$
 Replacing line 3 and line 7 with
 the following two lines
-\begin{lstlisting}[caption={replaced line 3 and line 7}label=code:tikhonovlog, language=C++]
+\begin{lstlisting}[caption={replaced line 3 and line 7},label=code:LASSO, language=C++]
   forward_grad_for_square_loss<Matrix> forward(&A, &b, &Atx, eta);
   ForwardBackwardSplitting<forward_grad_for_square_loss<Matrix>, prox_l1> fbs(&x, forward, backward);
 \end{lstlisting}
