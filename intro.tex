@@ -4,9 +4,9 @@
 
 Specifically, \pkg~implements  algorithms based on  the following methods:
 \begin{itemize}
-\item \textbf{Operator splitting}: a collection of methods that decompose problems into simple subproblems. The original problem often takes the following forms: (i) minimizing $f_1(x)+\cdots+f_n(x)$, (ii) $0\in T_1(x)+\cdots +T_n(x)$, and (iii) minimizing $f_1(x_1)+\cdots+f_n(x_n)$ subject to linear constraints $A_1 x_1+\cdots A_m x_m=b$. In addition, any function $f_i$ can compose with a linear operator, e.g. $f(x) = g(Ax)$.
+\item \textbf{Operator splitting}: a collection of methods that decompose problems into simple subproblems. The original problem often takes the following forms: (i) minimizing $f_1(x)+\cdots+f_n(x)$, (ii) finding a solution $x$ to $0\in T_1(x)+\cdots +T_n(x)$, and (iii) minimizing $f_1(x_1)+\cdots+f_n(x_n)$ subject to linear constraints $A_1 x_1+\cdots A_m x_m=b$. In addition, any function $f_i$ can compose with a linear operator, e.g. $f(x) = g(Ax)$.
 
-\item \textbf{Coordinate update}: a collection of methods that find a solution $x$ by updating one, or a few, of its elements each time. The coordinates can be selected according to the random, cyclic, shuffled cyclic, and greedy rules.
+\item \textbf{Coordinate update}: a collection of methods that find a solution $x$ by updating one, or a few, of its elements each time. The coordinate ordering can follow the random, cyclic, shuffled cyclic, and greedy rules.
 
 \item \textbf{Parallel} % numerical linear algebra procedures or 
 coordinate updates (either synchronous or asynchronous).
@@ -15,17 +15,17 @@ coordinate updates (either synchronous or asynchronous).
 These methods are reviewed in Section~\ref{sec:review} below.
 
 \pkg~is not a modeling language but an algorithm development toolbox. %does not reduce a problem automatically into these algorithms.
-We demonstrate the usage of the toolbox in the following examples:
+The usage of this toolbox is demonstrated in the following examples:
  linear system of equations;
 quadratic programming;
 empirical risk minimization (e.g. $\ell_1$ and $\ell_2$ regularized  regression);
 support vector machine;
 portfolio optimization;
-and nonnegative matrix factorization. \pkg~can use multiple cores efficiently to solve these  problems because it exploits the underlying structures of the problems. % to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
+and nonnegative matrix factorization. \pkg~can use multiple cores efficiently to solve these  problems because it exploits their underlying structures. % to obtain simple subproblems. %, either through operator splitting or coordinate update, or both, and, furthermore, most of the operations can be performed in parallel and some are themselves easy to parallelize. Therefore, their numerical solutions of these problems can utilize all the cores available.
 
 \subsection{Coding and design}
-\pkg~leverages the \cpp~standard and object oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading that is invariant to operating system. \pkg~can be compiled by standard C++ compilers  under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and numerical linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ScaLAPACK\citep{blackford1997scalapack}.}  that correspond to different algorithmic components. \pkg~is used by combining objects from each layer.
-Therefore, our codes  are short, clean, and thus easy to read and modify.
+\pkg~leverages the \cpp~standard\footnote{C++ is standardized by ISO (The International Standards Organization)  The original C++ standard was issued in 1998. A major update to the standard, C++11, was issued in 2011.} and object-oriented design, striking for efficiency, portability, and code readability. The package is written in C++ as Matlab does not currently support shared memory programming. The thread library, a new feature of the C++11 standard, provides multithreading that is invariant to operating system. \pkg~can be compiled by C++ compilers under Linux, Mac, and Windows. We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. Our codebase is separated into layers: executables, multicore drivers, schemes, operators, and numerical linear algebra\footnote{For the best performance, BLAS is called for numerical algebra operations (e.g., the product of a matrix and a vector plus another vector). While \pkg~can parallelize coordinate updates, it is also possible to parallelize numerical algebra operations by linking \pkg~with a parallel BLAS package such as ScaLAPACK\citep{blackford1997scalapack}.}  that correspond to different algorithmic components. \pkg~is used by combining objects from each layer.
+As a result, our codes  are short, clean, and thus easy to read and modify.
 
 %We design the package so that the user can implement a sophisticated operator-splitting, coordinate-update, and sequential or parallel algorithm  with little effort. The user need only  specify a function, or an operator, either from a provided list or using their own implementation. A guide to implementation is provided. The implemented operator-splitting layers provides a variety of coordinate update mappings that utilize ``forward" and ``backward" operators such as gradient descent and proximal mappings of a function, respectively. The  drivers execute the coordinate updates. (asynchronous) parallelism can be turned on by simply specifying the number of threads to use.
 %The above functionalities are supported by our novel modular architecture.
@@ -38,25 +38,25 @@ Therefore, our codes  are short, clean, and thus easy to read and modify.
 %Lasso, ridge regression, robust regression, quadratic programming, and nonnegative matrix factorization.
 
 \subsection{Download and installation}
-The \pkg~package can be access from GitHub at~\repo. The package runs on Linux, Mac, and Windows operating systems.
+The \pkg~package can be accessed from GitHub at~\repo. The package runs on Linux, Mac, and Windows operating systems.
 \subsection{Literature}\label{sec:review}
-\subsection*{Operator splitting methods:}  These methods solve complicated optimization and monotone inclusion problems by simple subproblems. They started to appear in 1950s for  solving partial differential equations and feasibility problems and were rapidly developed during the 1960s--1980s. Several splitting methods such as Forward-Backward \citep{Passty1979_ergodic}, Douglas-Rachford \citep{DR56} (which is equivalent to ADMM \citep{GabayMercier1976_dual,GlowinskiMarroco1975_approximation}), and Peaceman-Rachford \citep{PR} were introduced. Recently,
+\subsection*{Operator splitting methods:}  These methods solve complicated optimization and monotone inclusion problems by simple subproblems. They started to appear in the 1950s for solving partial differential equations and feasibility problems and were rapidly developed during the 1960s--1980s. Several splitting methods such as Forward-Backward \citep{Passty1979_ergodic}, Douglas-Rachford \citep{DR56} (which is equivalent to ADMM \citep{GabayMercier1976_dual,GlowinskiMarroco1975_approximation}), and Peaceman-Rachford \citep{PR} were introduced. Recently,
 operator splitting methods such as ADMM and Split Bregman \citep{GoldsteinOsher2009_split} (also see \citep{WangYangYinZhang2008_NewAlternating}) have found new applications in image processing,
 statistical and machine learning, compressive sensing, and control. New methods such as primal-dual splitting \citep{Condat2013_primaldual,Vu2013_splitting}, three-operator splitting \citep{DavisYin2015_threeoperator}, and other primal-dual splitting methods \citep{ChenHuangZhang2016_primaldual,ChenHuangZhang2016_primalduala,LiShenXuZhang2015_multistep} have appeared, and they are designed to solve more complicated problems.
 
 %Software packages based on operator splitting  .... include TFOCS \citep{BeckerCandesGrant2011_TemplatesConvex} .....
 
 \subsection*{Coordinate update methods:}
-As the name suggests, these methods update the selected one, or a few, elements of the variable at each iteration. The original  coordinate update method \citep{Hildreth1957_quadratic,Warga1963_minimizing,SargentSebastian1973_convergence,LuoTseng1992_convergence} developed in 1950s and analyzed since then only minimizes the original objective function with respect to the selected coordinates. The later developments such as \citep{GrippoSciandrone2000_convergence,TsengYun2009_coordinate,TsengYun2009_blockcoordinate,XuYin2013_block,BolteSabachTeboulle2014_proximal} have allowed to minimize other functions that are often easier or more efficient. Lately, coordinate descent has been extended so that each update no longer minimizes a function, but instead the update is based on an operator, such as the coordinate projection of an operator or a coordinate-wise fixed-point to an operator \citep{CombettesPesquet2015_stochastic,BianchiHachemFranck2014_stochastic,PengXuYanYin2015_arock,PengWuXuYanYin2016_coordinate}. Hence, we call it coordinate update instead of coordinate descent.
+As the name suggests, these methods update the selected one, or a few, elements of the variable at each iteration. The original  coordinate descent method \citep{Hildreth1957_quadratic,Warga1963_minimizing,SargentSebastian1973_convergence,LuoTseng1992_convergence} developed in 1950s and analyzed in the 1960s-1990s minimizes the original objective function with respect to the selected coordinates. Later developments such as \citep{GrippoSciandrone2000_convergence,TsengYun2009_coordinate,TsengYun2009_blockcoordinate,XuYin2013_block,BolteSabachTeboulle2014_proximal} have allowed surrogates for the objective function that are often easier or more efficient to minimize. Lately, coordinate descent has been extended so that each update no longer minimizes a function, but instead the update applies an operator, such as the coordinate projection of an operator or a coordinate-wise fixed-point to an operator \citep{CombettesPesquet2015_stochastic,BianchiHachemFranck2014_stochastic,PengXuYanYin2015_arock,PengWuXuYanYin2016_coordinate}. Hence, we call it coordinate update instead of coordinate descent.
 
 The initial coordinate selection rule  is cyclic selection. It was widely used before other rules such as random \citep{Nesterov2012_efficiency,RichtarikTakac2014_iteration,LuXiao2015_complexity}, shuffled cyclic, greedy \citep{BertsekasBertsekas1999_nonlinear,LiOsher2009_coordinate,TsengYun2009_coordinate,PengYanYin2013_parallel,NutiniSchmidtLaradjiFriedlanderKoepke2015_coordinate}, and parallel \citep{BradleyKyrolaBicksonGuestrin2011_parallel,richtarik2016parallel} started to appear and gain popularity.
 
 
 \subsection*{Asynchronous parallel methods:}
 
-In  parallel algorithms, the multiple threads need to communicate. An algorithm is synchronous if all the  threads must finish computing before they exchange data, and only after the exchange is done can they start the next computing cycle. When the threads run on multiple cores, synchronization requires every core to wait for the slowest core
-(or the one solving the most difficult subproblem) to be communicated,  leading to so-called  bus contention. The threads in an asynchronous parallel algorithm, however, can run continuously; they can compute with whatever information they have, even if the latest information from other agents
-have not arrived; they write their results to the shared memory while other threads are still computing. They do not wait for each other. Async-parallel can be traced back to~\citep{chazan1969chaotic} for solving systems of linear equations.
+In  parallel algorithms, the multiple threads need to communicate. An algorithm is synchronous if all the  threads must finish computing before they exchange data, and only after the exchange is completed can they start the next computing cycle. When the threads run on multiple cores, synchronization requires every core to wait for the slowest core
+(or the one solving the most difficult subproblem) to be communicated,  leading to so-called bus contention. The threads in an asynchronous parallel algorithm, however, can run continuously; they can compute with whatever information they have, even if the latest information from other agents
+have not arrived; they write their results to the shared memory while other threads are still computing. Async-parallel methods can be traced back to~\citep{chazan1969chaotic} for solving systems of linear equations.
 For function minimization,~\citep{bertsekas1989parallel} introduced an async-parallel gradient projection method. Convergence rates are obtained in~\citep{tseng1991rate-asyn}.
 
 For fixed-point problems, async-parallel methods date back to~\citep{baudet1978asynchronous}. In  the pre-2010 methods \citep{BMR1997asyn-multisplit,bertsekas1983distributed,Baz200591,el1998flexible} and the review~\citep{frommer2000asynchronous}, each agent updates its own subset of coordinates. Convergence is established under the \emph{$P$-contraction} condition and its variants~\citep{bertsekas1983distributed}. Recently, the works \citep{nedic2001distributed,recht2011hogwild,liu2013asynchronous,liu2014asynchronous,hsieh2015passcode} introduced async-parallel stochastic methods for function minimization.
@@ -66,17 +66,16 @@ For fixed-point problems,~\citep{PengXuYanYin2015_arock} introduced async-parall
 %Synchronous parallel algorithms are easy to control and are efficient if the cores have balanced loads; asynchronous  ones are difficult to control and, if properly controlled, are faster and insensible to load imbalance.
 
 \subsection*{Software packages:}
-There exists several packages for solving optimization problems. 
-TOFCS~\citep{becker2011templates} is a framework for solving convex cone problems with first order method. 
-SCS \citep{ocpb:16} is a convex cone program solver by applying operator splitting method to solve an equivalent
- feasibility problem. 
+There exist several packages for solving optimization problems based on splitting and coordinate methods. 
+TOFCS~\citep{becker2011templates} is a framework for solving convex cone problems with first-order methods. 
+SCS \citep{ocpb:16} is a convex cone program solver that applies operator splitting methods to an equivalent feasibility problem. 
 Epsilon \citep{wytock2015convex} is a package for solving general convex programming by using fast linear and proximal operators.
 Though these packages solve convex optimization problems from various applications, they are sequential and do not take advantage of
 the multicore systems.  
 PASSCoDe \citep{hsieh2015passcode} implements the muticore parallel dual coordinate descent method that solves $\ell_2$ regularized 
 empirical risk minimization problems.
 APPROX\citep{fercoq2015accelerated} implements  parallel coordinate descent, stochastic dual ascent, and accelerated gradient descent for block seperable objective functions.
-AC-DC\citep{richtarik2016parallel} contains a suite a serial, parallel, and distributed coordinate descent algorithms for LASSO, Elastic Net, SVM, and sparse SVM.
+AC-DC\citep{richtarik2016parallel} contains a suite of serial, parallel, and distributed coordinate descent algorithms for LASSO, Elastic Net, SVM, and sparse SVM.
 
 %\subsection{Old}
 %Coordinate update (CU) methods reduce a large problem to smaller subproblems and are useful for solving large-sized problems.
