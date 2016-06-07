@@ -14,7 +14,7 @@ coordinate updates (either synchronous or asynchronous).
 \end{itemize}
 These methods are reviewed in Section~\ref{sec:review} below.
 
-\pkg~is not a modeling language but an algorithm development toolbox. %does not reduce a problem automatically into these algorithms.
+\pkg~is not a modeling language, but an algorithm development toolbox. %does not reduce a problem automatically into these algorithms.
 The usage of this toolbox is demonstrated in the following examples:
  linear system of equations;
 quadratic programming;
@@ -54,9 +54,9 @@ The initial coordinate selection rule  is cyclic selection. It was widely used b
 
 \subsection*{Asynchronous parallel methods:}
 
-In  parallel algorithms, the multiple threads need to communicate. An algorithm is synchronous if all the  threads must finish computing before they exchange data, and only after the exchange is completed can they start the next computing cycle. When the threads run on multiple cores, synchronization requires every core to wait for the slowest core
-(or the one solving the most difficult subproblem) to be communicated,  leading to so-called bus contention. The threads in an asynchronous parallel algorithm, however, can run continuously; they can compute with whatever information they have, even if the latest information from other agents
-have not arrived; they write their results to the shared memory while other threads are still computing. Async-parallel methods can be traced back to~\citep{chazan1969chaotic} for solving systems of linear equations.
+In  parallel algorithms, multiple agents attempt to solve a problem. The agents, to solve the problem, must exchange data. An algorithm is synchronous if all the agents must finish computing before they exchange data, and only after the exchange is completed can they start the next computing cycle.  Synchronization requires every agent to wait for the slowest agent
+(or the one solving the most difficult subproblem) to finish computing before communicating. On shared memory architectures\footnote{On multicore architectures, agents can be threads or processes. Threads automatically share memory, whereas processes require inter-process communication.}, the synchronization of communication leads to bus contention. The agents in an asynchronous parallel algorithm, however, can run continuously; they can compute with whatever information they have, even if the latest information from other agents
+has not arrived; they write their results to the shared memory while other agents are still computing. Async-parallel methods can be traced back to~\citep{chazan1969chaotic} for solving systems of linear equations.
 For function minimization,~\citep{bertsekas1989parallel} introduced an async-parallel gradient projection method. Convergence rates are obtained in~\citep{tseng1991rate-asyn}.
 
 For fixed-point problems, async-parallel methods date back to~\citep{baudet1978asynchronous}. In  the pre-2010 methods \citep{BMR1997asyn-multisplit,bertsekas1983distributed,Baz200591,el1998flexible} and the review~\citep{frommer2000asynchronous}, each agent updates its own subset of coordinates. Convergence is established under the \emph{$P$-contraction} condition and its variants~\citep{bertsekas1983distributed}. Recently, the works \citep{nedic2001distributed,recht2011hogwild,liu2013asynchronous,liu2014asynchronous,hsieh2015passcode} introduced async-parallel stochastic methods for function minimization.
