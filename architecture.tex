@@ -13,13 +13,13 @@ The following is a brief description of each layer and how it interacts with the
 \subsection{Numerical linear algebra}
 
 We use Eigen~\citep{eigenweb}, Sparse BLAS\footnote{\url{http://math.nist.gov/spblas/}}, and BLAS\footnote{\url{http://www.netlib.org/blas/}} in our Toolbox.
-Directly using efficient numerical packages like BLAS can be intimidating due to their complex APIs\footnote{} . We provide simplified APIs for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical linear algebra layer in their implementations.
+Directly using efficient numerical packages like BLAS can be intimidating due to their complex APIs. We provide simplified APIs for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
 If our provided functions are not sufficient, Eigen, Sparse BLAS, and BLAS are well documented. 
 
 \subsection{Operator}
 
 The Operator Layer contains Forward Operator objects\footnote{``Operator object'' refers to a C++ object. An ``operator'' refers to the mathematical object.} (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
-For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for sparse logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x}))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
+For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for $\ell_1$ regularized logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x}))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
 
 Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common forward and backward operators into Operator objects. Abstracting operators into Operator objects is useful, as Operator objects provide clarity and modularity. Consider the construction of  \texttt{forward} in Listing \ref{code:l1log}. At a glance, it is clear that we are using the gradient of logistic regression, the data is sparse, and we are using the Matrix \texttt{A} and Vector \texttt{b} to compute the gradient. Listing \ref{code:l1log} and Listing \ref{code:LASSO} demonstrates how Operator objects provide modularity. Perturbations to an algorithm, such as a change of regularizer or a change of data fidelity term, can be handled by changing the corresponding operator type. The rest of the code structure is unchanged. The Operator Layer, as a result, allows users to reason and code at the level of operators. 
 The higher layers use Operator objects as components in the creation of algorithms.
@@ -33,8 +33,8 @@ In the case that an operator is needed that we have not provided, a user can use
 
 \subsection{Scheme}
 A scheme describes how to make a single-iteration update to $x$.
-It can be written as a combination of operators. For example, \eqref{eq:fbs_l1_log} is the Forward-Backward Splitting Scheme (also referred as Proximal Gradient Method) for a specific problem, sparse logistic regression. In Algorithm \ref{alg:fbs_l1_log}, it corresponds to Line 9. To apply the Forward-Backward Splitting Scheme to the sparse logistic regression problem \ref{code:tikhonovlog} , we need to specify a forward operator and a backward operator (e.g., on Line 5 of Algorithm \ref{alg:fbs_l1_log}). We can see this in Listing \ref{code:l1log}.
-The scheme object \texttt{fbs} is specialized to sparse logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
+It can be written as a combination of operators. For example, \eqref{eq:fbs_l1_log} is the Forward-Backward Splitting Scheme (also referred as Proximal Gradient Method) for a specific problem, $\ell_1$ regularized logistic regression. In Algorithm \ref{alg:fbs_l1_log}, it corresponds to Line 9. To apply the Forward-Backward Splitting Scheme to the $\ell_1$ regularized logistic regression problem \ref{code:tikhonovlog} , we need to specify a forward operator and a backward operator (e.g., on Line 5 of Algorithm \ref{alg:fbs_l1_log}). We can see this in Listing \ref{code:l1log}.
+The scheme object \texttt{fbs} is specialized to $\ell_1$ regularized logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
 
 We provide implemenations of the following schemes:  Proximal-Point Method,  Gradient Descent, Forward-Backward Splitting, Backward-Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
 
@@ -122,7 +122,7 @@ The Scheme Interface is very lightweight, as the iterations of optimization meth
  
 
 
-\subsection{Kernel and Multicore Driver Interaction}
+\subsection{Kernel and Multicore Driver interaction}
 
 A Multicore Driver creates agents using Kernel functions. The arguments to a Multicore Driver are a scheme object and a params object. A new Kernel function must be callable using information from those two objects. The Multicore Drivers must be modified to include the new kernel function as an option for creating an agent. The modfication requires adding a new case to an if-elseif chain, and knowledge of how to create a C++11 thread.
 
