@@ -53,14 +53,14 @@ implementing~\eqref{eq:fbs_l1_log} in an asynchronous parallel coordinate update
   \caption{\pkg~for $\ell_1$ logistic regression.}
 \end{algorithm}
 The snippet of code (extracted from
-\texttt{apps/tmac\_fbs\_l1\_log.cc}) shown in Listing 1 implements Algorithm~\ref{alg:fbs_l1_log} with the \pkg~package.
+\texttt{apps/tmac\_fbs\_l1\_log.cc}) shown in Listing \ref{code:l1log} implements Algorithm~\ref{alg:fbs_l1_log} with the \pkg~package.
 Specifically, line 3 defines \texttt{forward} as an operator of type \texttt{forward\_grad\_for\_log\_loss<SpMat>}
 initialized by the pointers to the data \texttt{A}, which is a sparse matrix, and label \texttt{b}, which is a dense vector. Line 5  defines a
 \texttt{prox\_l1} operator (\texttt{backward}) initialized by $\lambda$ and step size $\eta$.
 Line 7 defines a forward-backward splitting scheme (\texttt{fbs}) with the previously defined forward operator,
 backward operator and the address of the unknown variable \texttt{x}. Line 9 calls the multicore driver
 \texttt{TMAC} on the \texttt{fbs} scheme and some user specified parameters (\texttt{params}).
-\begin{lstlisting}[caption={example code}\label{code:l1log},language=C++]
+\begin{lstlisting}[caption={example code},label=code:l1log,language=C++]
   // [...] parameters are defined above
   // forward operator: gradient step for logistic loss
   forward_grad_for_log_loss<SpMat> forward(&A, &b, &Atx, eta);
@@ -74,7 +74,7 @@ backward operator and the address of the unknown variable \texttt{x}. Line 9 cal
 \end{lstlisting}
 One can easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
 the following two lines
-\begin{lstlisting}[ caption={modified line 5-7}\label{code:tikhonovlog}, language=C++]
+\begin{lstlisting}[ caption={modified line 5-7},label=code:tikhonovlog, language=C++]
   prox_sum_square backward(eta, lambda);
   ForwardBackwardSplitting<forward_grad_for_log_loss<SpMat>, prox_sum_square> fbs(&x, forward, backward);
 \end{lstlisting}
@@ -82,7 +82,7 @@ solves the Tikhonov regularized logistic regression, i.e.,
 $$\Min_{x \in \RR^n} \lambda \|x\|_2^2 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right).$$
 Replacing line 3 and line 7 with
 the following two lines
-\begin{lstlisting}[caption={replaced line 3 and line 7}\label{code:tikhonovlog}, language=C++]
+\begin{lstlisting}[caption={replaced line 3 and line 7}label=code:tikhonovlog, language=C++]
   forward_grad_for_square_loss<Matrix> forward(&A, &b, &Atx, eta);
   ForwardBackwardSplitting<forward_grad_for_square_loss<Matrix>, prox_l1> fbs(&x, forward, backward);
 \end{lstlisting}
