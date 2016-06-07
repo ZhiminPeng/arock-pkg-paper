@@ -3,26 +3,26 @@
 
 New features are still being added to \pkg. The following are some of the features we are exploring.
 
-\subsection{Stochastic algorithms} 
+\subsection{Stochastic algorithms}
 
-Stochastic algorithms exploit summative structures in problems to produce cheap updates. Our current toolbox does not currently support stochastic algorithms, but can be modified to do so. Such a modification would require stochastic operators. A developement branch will appear on our github.  
+Stochastic algorithms exploit the sum structure in problems to produce cheap updates. Our current toolbox does not currently support stochastic algorithms, but can be modified to do so. Such a modification would require stochastic operators. A development branch will appear on our GitHub.
 
 \subsection{Cluster computing}
- 
+
  Currently, agents are realized as threads.
  This limits our toolbox to the multicore regime.
- Future releases intend to use MPI to bring \pkg~to cluster computing. The new functionality will be provided in the Driver and the Kernel Layer. 
+ Future releases intend to use MPI to bring \pkg~to cluster computing. The new functionality will be provided in the Driver and the Kernel Layer.
 
 \subsection{User interface}
  \pkg~requires the user to either use our prepackaged executables, or code moderately in C++.
- A graphic user interace is in development for those who wish avoid interacting directly with C++.
+ A graphic user interrace is in development for those who wish avoid interacting directly with C++.
  This will limit the user to built-in functionality.
  In addition, interfaces to Matlab and Python will be provided for algorithms of particular interest.
- 
+
 \subsection{Automatic parameter choice}
-\pkg~requires the user to choose stepsizes, and number of threads.
-In future releases we intend to provide automatic stepsize heuristics. 
-Optimizing thread number is a function of current processor usage and computing architecture. 
+\pkg~requires the user to choose step sizes, and number of threads.
+In future releases we intend to provide automatic step-size heuristics.
+Optimizing thread number is a function of current processor usage and computing architecture.
 We intend to provide functions to survey the current architecture and suggest proper levels of parallelism and asynchrony.
 
 \subsection{Block coordinate update}
@@ -52,4 +52,5 @@ and coordinate update methods. \pkg~is separated into several layers and mimics 
 New features and applications will be added to \pkg~based upon new research and community input. The software and user guide \repo~will be kept up-to-date and supported.
 
 \section{Acknowledgements}
-The work is supported in part by NSF grants ECCS-1462398.
+The work is supported in part by NSF grant ECCS-1462398 and ONR Grants N000141410683
+and N000141210838. 

@@ -8,25 +8,25 @@ The toolbox achieves this by separating into the following layers: Numerical lin
 Each layer represents a different mathematical component of an optimization algorithm.
 
 
-The following is a brief description of each layer and how it interacts with the layers above and below it. 
+The following is a brief description of each layer and how it interacts with the layers above and below it.
 
 \subsection{Numerical linear algebra}
 
 We use Eigen~\citep{eigenweb}, Sparse BLAS\footnote{\url{http://math.nist.gov/spblas/}}, and BLAS\footnote{\url{http://www.netlib.org/blas/}} in our Toolbox.
 Directly using efficient numerical packages like BLAS can be intimidating due to their complex APIs. We provide simplified APIs for common linear algebra operations like $a_i^T x$ in Algorithm \ref{alg:fbs_l1_log}. This layer insulates the user from the grit of raw numerical implementation. Higher layers use the Numerical Linear Algebra Layer in their implementations.
-If our provided functions are not sufficient, Eigen, Sparse BLAS, and BLAS are well documented. 
+If our provided functions are not sufficient, Eigen, Sparse BLAS, and BLAS are well documented.
 
 \subsection{Operator}
 
-The Operator Layer contains Forward Operator objects\footnote{``Operator object'' refers to a C++ object. An ``operator'' refers to the mathematical object.} (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughtout optimization.
-For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for $\ell_1$ regularized logistic regression, requires the computation of the Forward Operator $x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x}))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backwad operator, the projection onto the positive orthant.
+The Operator Layer contains Forward Operator objects\footnote{``Operator object'' refers to a C++ object. An ``operator'' refers to the mathematical object.} (e.g., gradient descent step, subgradient step) and Backward Operator (e.g., proximal mapping, projection) objects. These operators types see heavy reuse throughout optimization.
+For instance, Algorithm \ref{alg:fbs_l1_log}, along with any other gradient based method for $\ell_1$ regularized logistic regression, requires the computation of the Forward Operator $x \mapsto x - \eta \, \nabla_x \,(\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x}))$. On a similar vein, Nonnegative Matrix Factorization and Nonnegative Least Squares share a backward operator, the projection onto the positive orthant.
 
-Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common forward and backward operators into Operator objects. Abstracting operators into Operator objects is useful, as Operator objects provide clarity and modularity. Consider the construction of  \texttt{forward} in Listing \ref{code:l1log}. At a glance, it is clear that we are using the gradient of logistic regression, the data is sparse, and we are using the Matrix \texttt{A} and Vector \texttt{b} to compute the gradient. Listing \ref{code:l1log} and Listing \ref{code:LASSO} demonstrates how Operator objects provide modularity. Perturbations to an algorithm, such as a change of regularizer or a change of data fidelity term, can be handled by changing the corresponding operator type. The rest of the code structure is unchanged. The Operator Layer, as a result, allows users to reason and code at the level of operators. 
+Much as the Numerical Linear Algebra Layer insulates the user from the computation details of numerical linear algebra, the Operator Layer insulates the user from the computational details of operators. This is achieved by encapsulating the computation of common forward and backward operators into Operator objects. Abstracting operators into Operator objects is useful, as Operator objects provide clarity and modularity. Consider the construction of  \texttt{forward} in Listing \ref{code:l1log}. At a glance, it is clear that we are using the gradient of logistic regression, the data is sparse, and we are using the Matrix \texttt{A} and Vector \texttt{b} to compute the gradient. Listing \ref{code:l1log} and Listing \ref{code:LASSO} demonstrates how Operator objects provide modularity. Perturbations to an algorithm, such as a change of regularizer or a change of data fidelity term, can be handled by changing the corresponding operator type. The rest of the code structure is unchanged. The Operator Layer, as a result, allows users to reason and code at the level of operators.
 The higher layers use Operator objects as components in the creation of algorithms.
- 
+
 As our Toolbox is designed for coordinate update methods, each operator is implemented to compute coordinates efficiently.
- A coordinate or block of coordinates can be computed efficienty if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (e.g. $(Ax)_i$ versus $Ax$). 
- In some cases caching, the storing an intermediate computations, can improve the efficiency of updating a coordinate block. These ideas are formalized in the paper on coordinate friendly stuctures~\citep{PengWuXuYanYin2016_coordinate}.
+ A coordinate or block of coordinates can be computed efficiently if the computational cost of a single coordinate or a block of coordinates of the operator is reduced by a dimensional factor compared to the evaluation of the entire operator (e.g. $(Ax)_i$ versus $Ax$).
+ In some cases caching, the storing an intermediate computations, can improve the efficiency of updating a coordinate block. These ideas are formalized in the paper on coordinate friendly structures~\citep{PengWuXuYanYin2016_coordinate}.
 
 In the case that an operator is needed that we have not provided, a user can use~\citep{PengWuXuYanYin2016_coordinate} as a guide to identify coordinate-friendly structures and implement their own operator. In addition, there are certain rules about operator implementation that must be followed; see Section \ref{sc:interface}.
 
@@ -36,7 +36,7 @@ A scheme describes how to make a single-iteration update to $x$.
 It can be written as a combination of operators. For example, \eqref{eq:fbs_l1_log} is the Forward-Backward Splitting Scheme (also referred as Proximal Gradient Method) for a specific problem, $\ell_1$ regularized logistic regression. In Algorithm \ref{alg:fbs_l1_log}, it corresponds to Line 9. To apply the Forward-Backward Splitting Scheme to the $\ell_1$ regularized logistic regression problem \ref{code:tikhonovlog} , we need to specify a forward operator and a backward operator (e.g., on Line 5 of Algorithm \ref{alg:fbs_l1_log}). We can see this in Listing \ref{code:l1log}.
 The scheme object \texttt{fbs} is specialized to $\ell_1$ regularized logistic regression by specifying its type as \texttt{ForwardBackwardSplitting<forward\_grad\_for\_log\_loss<SpMat>, prox\_l1>}.
 
-We provide implemenations of the following schemes:  Proximal-Point Method,  Gradient Descent, Forward-Backward Splitting, Backward-Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
+We provide implementations of the following schemes:  Proximal-Point Method,  Gradient Descent, Forward-Backward Splitting, Backward-Forward Splitting, Peaceman-Rachford Splitting, and Douglas-Rachford Splitting.
 
 If the provided schemes are not sufficient, the user may implement their own scheme following certain rules so that their scheme can interact with the rest of the package; see Section \ref{sc:interface}.
 The user is encouraged to use objects from the Operator Layer as building blocks, but direct calling the Numerical Linear Algebra Layer is perfectly functional. %Their are certain rules about implementing schemes that must be followed; see Section \ref{sc:implement}.
@@ -47,11 +47,11 @@ As can be seen in Algorithm \ref{alg:fbs_l1_log}, it corresponds to the while-lo
 The agent chooses a coordinate using its rule and call the Scheme object with the chosen coordinate to update $x$.
 For each coordinate choice rule, we have implemented a corresponding Kernel function.
 
-We provide the following coordinate choice rules: cyclic, random, and parallel Gauss-Seidel. 
+We provide the following coordinate choice rules: cyclic, random, and parallel Gauss-Seidel.
 Cyclic update rule divides coordinates into approximately equal-sized blocks, and each agent is assigned a block.
-Each agent chooses coordinates cyclicly from within the block. 
+Each agent chooses coordinates cyclicly from within the block.
 For random update rule, each agent randomly chooses a block, then chooses coordinates cyclicly from within that block.
-For parallel Gauss-Seidel rule, each agent updates all of the coordinates in a Gauss-Seidel fashion. 
+For parallel Gauss-Seidel rule, each agent updates all of the coordinates in a Gauss-Seidel fashion.
 If the user desires a different coordinate rule, they may implement their own Kernel function, following the specifications in Section~\ref{sc:implement}.
 
 
@@ -119,19 +119,19 @@ Schemes must be suitable for both asynchronous and synchronous computing. Synchr
 
 The Scheme Interface is very lightweight, as the iterations of optimization methods come in a variety of forms.  All it requires is that a coordinate update can be produced and that parameters can be passed to the object.
 
- 
+
 
 
 \subsection{Kernel and Multicore Driver interaction}
 
-A Multicore Driver creates agents using Kernel functions. The arguments to a Multicore Driver are a scheme object and a params object. A new Kernel function must be callable using information from those two objects. The Multicore Drivers must be modified to include the new kernel function as an option for creating an agent. The modfication requires adding a new case to an if-elseif chain, and knowledge of how to create a C++11 thread.
+A Multicore Driver creates agents using Kernel functions. The arguments to a Multicore Driver are a scheme object and a params object. A new Kernel function must be callable using information from those two objects. The Multicore Drivers must be modified to include the new kernel function as an option for creating an agent. The modification requires adding a new case to an if-elseif chain, and knowledge of how to create a C++11 thread.
 
 \subsection{Templating}
 
 In C++, when objects have similar structures that only vary based upon an input type, templates are used to reduce code redundancy. For instance, the code for an object representing a dense matrix of \emph{doubles} and the code for an object representing a dense matrix of \emph{floats} is identical.
 Templates are not objects, but instead are blueprints for constructing an object.
-Based upon the arguments to the template, a corresponding type is automically constructed.
-We use templating heavily in our Toolbox, as most of our workflow can be genericized.
+Based upon the arguments to the template, a corresponding type is atomically constructed.
+We use templating heavily in our Toolbox, as most of our work flow can be genericized.
 
 Objects in the Scheme Layer are implemented as templates.
 This is a natural choice, as the Scheme objects are generic iteration formulas.

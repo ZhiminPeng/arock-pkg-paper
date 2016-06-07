@@ -43,7 +43,7 @@ implementing~\eqref{eq:fbs_l1_log} in an asynchronous parallel coordinate update
   \textbf{Initialization:} \\
   \quad $\text{foward}(x) := x - \eta \, \nabla_x \,\sum_{i = 1}^m \log (1 + e^{-b_i \cdot a_i^T x})$  \tcp*{forward operator}
   \quad $\text{backward}(x) := \prox_{\eta \lambda  \|\cdot\|_1} (x)$ \tcp*{backward operator}
-  \quad $\text{fbs}(x) := \text{backward}(\text{forward}(x))$ \tcp*{foward-backward splitting scheme}
+  \quad $\text{fbs}(x) := \text{backward}(\text{forward}(x))$ \tcp*{forward-backward splitting scheme}
   \quad create $p$ computing agents \\
   % \tcp*{multicore driver}
   \While{each of the $p$ agents continuously}{
@@ -72,13 +72,13 @@ backward operator and the address of the unknown variable \texttt{x}. Line 9 cal
   // the multicore driver
   TMAC(fbs, params);
 \end{lstlisting}
-One can easily adapt the previous code to solve other problems, for example, replacing lines 5 through 7 with
+One can easily adapt the previous code to solve other problems. For example, replacing lines 5 through 7 with
 the following two lines
 \begin{lstlisting}[ caption={modified line 5-7},label=code:tikhonovlog, language=C++]
   prox_sum_square backward(eta, lambda);
   ForwardBackwardSplitting<forward_grad_for_log_loss<SpMat>, prox_sum_square> fbs(&x, forward, backward);
 \end{lstlisting}
-solves the Tikhonov regularized logistic regression, i.e.,
+solves the problem of Tikhonov regularized logistic regression:
 $$\Min_{x \in \RR^n} \lambda \|x\|_2^2 + \sum_{i = 1}^m \log\left(1 + \exp(-b_i \cdot a_i^T x)\right).$$
 Replacing line 3 and line 7 with
 the following two lines
@@ -87,7 +87,9 @@ the following two lines
   ForwardBackwardSplitting<forward_grad_for_square_loss<Matrix>, prox_l1> fbs(&x, forward, backward);
 \end{lstlisting}
 solves the Lasso problem
-$$\Min_{x \in \RR^n} \lambda \|x\|_1 + \frac{1}{2}\|A x - b\|^2.$$
-where \texttt{A} is a dense matrix. It is worth mentioning that the previously used operators have implementions in \pkg. Users can refer to the documentation for
+$$\Min_{x \in \RR^n} \lambda \|x\|_1 + \frac{1}{2}\|A x - b\|^2,$$
+where $A$ is a dense matrix. Therefore, \texttt{<Matrix>} is used instead of \texttt{<SpMat>}.
+
+It is worth mentioning that the previously used operators have implementations in \pkg. Users can refer to the documentation for
 the complete list of implemented operators.
 
